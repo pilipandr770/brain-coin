@@ -4,18 +4,25 @@
 
 -- Users (parents and children)
 CREATE TABLE IF NOT EXISTS users (
-  id               SERIAL PRIMARY KEY,
-  email            VARCHAR(255) UNIQUE NOT NULL,
-  password_hash    VARCHAR(255) NOT NULL,
-  role             VARCHAR(10) NOT NULL CHECK (role IN ('parent', 'child')),
-  name             VARCHAR(100) NOT NULL,
-  age              INTEGER,
-  grade            VARCHAR(10),
-  ui_language      VARCHAR(5) DEFAULT 'de',
-  content_settings JSONB DEFAULT '{}',
-  avatar_emoji     VARCHAR(10) DEFAULT '😊',
-  total_coins      INTEGER DEFAULT 0,
-  created_at       TIMESTAMP DEFAULT NOW()
+  id                   SERIAL PRIMARY KEY,
+  email                VARCHAR(255) UNIQUE NOT NULL,
+  password_hash        VARCHAR(255) NOT NULL,
+  role                 VARCHAR(10) NOT NULL CHECK (role IN ('parent', 'child')),
+  name                 VARCHAR(100) NOT NULL,
+  age                  INTEGER,
+  grade                VARCHAR(10),
+  ui_language          VARCHAR(5) DEFAULT 'de',
+  content_settings     JSONB DEFAULT '{}',
+  avatar_emoji         VARCHAR(10) DEFAULT '😊',
+  total_coins          INTEGER DEFAULT 0,
+  is_admin             BOOLEAN DEFAULT FALSE,
+  -- Stripe subscription fields (parents only)
+  stripe_customer_id   VARCHAR(100),
+  stripe_sub_id        VARCHAR(100),
+  sub_status           VARCHAR(20) DEFAULT 'none' CHECK (sub_status IN ('none','trialing','active','past_due','canceled')),
+  trial_ends_at        TIMESTAMP,
+  sub_current_period_end TIMESTAMP,
+  created_at           TIMESTAMP DEFAULT NOW()
 );
 
 -- Parent ↔ Child relationships

@@ -9,12 +9,18 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true,
 }));
+
+// Stripe webhook needs raw body — must be mounted BEFORE express.json()
+app.use('/api/payments/webhook', require('./routes/payments'));
+
 app.use(express.json());
 
 app.use('/api/auth',      require('./routes/auth'));
 app.use('/api/contracts', require('./routes/contracts'));
 app.use('/api/quiz',      require('./routes/quiz'));
 app.use('/api/social',    require('./routes/social'));
+app.use('/api/payments',  require('./routes/payments'));
+app.use('/api/admin',     require('./routes/admin'));
 
 app.get('/api/health', async (_req, res) => {
   try {

@@ -11,6 +11,8 @@ import ParentDashboard from './screens/parent/ParentDashboard';
 import ContractCreator from './screens/parent/ContractCreator';
 import CreateChild     from './screens/parent/CreateChild';
 import ParentStats     from './screens/parent/ParentStats';
+import PaymentScreen   from './screens/parent/PaymentScreen';
+import AdminDashboard  from './screens/parent/AdminDashboard';
 
 import ChildLayout     from './screens/child/ChildLayout';
 import ChildHome       from './screens/child/ChildHome';
@@ -25,13 +27,14 @@ import MistakeReview   from './screens/child/MistakeReview';
 function Guard({ children, role }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  if (role && user.role !== role) return <Navigate to="/" replace />;
+  if (role && user.role !== role && user.role !== 'admin') return <Navigate to="/" replace />;
   return children;
 }
 
 function RootRedirect() {
   const { user } = useAuth();
   if (!user) return <SplashScreen />;
+  if (user.role === 'admin') return <Navigate to="/admin" replace />;
   return <Navigate to={user.role === 'parent' ? '/parent' : '/child'} replace />;
 }
 
@@ -50,8 +53,10 @@ export default function App() {
             <Route index          element={<ParentDashboard />} />
             <Route path="contracts/new" element={<ContractCreator />} />
             <Route path="children/new"  element={<CreateChild />} />
+            <Route path="payment"       element={<PaymentScreen />} />
           </Route>
           <Route path="/parent/stats/:childId" element={<Guard role="parent"><ParentStats /></Guard>} />
+          <Route path="/admin" element={<Guard role="admin"><AdminDashboard /></Guard>} />
 
           {/* Child — tabbed layout screens */}
           <Route path="/child" element={<Guard role="child"><ChildLayout /></Guard>}>
