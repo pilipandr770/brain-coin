@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: braincoin_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: braincoin
+      POSTGRES_USER: braincoin_user
+      POSTGRES_PASSWORD: braincoin_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./backend/db/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U braincoin_user -d braincoin"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: braincoin_api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://braincoin_user:braincoin_pass@postgres:5432/braincoin
+      JWT_SECRET: br41nc01n-super-secret-2026-change-in-production
+      PORT: 3001
+      CORS_ORIGIN: http://localhost:3000
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    container_name: braincoin_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
