@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>BrainCoin</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body, #root {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #f8fafc;
+        overflow: hidden;
+      }
+      /* Mobile frame on wide screens */
+      @media (min-width: 600px) {
+        body {
+          display: flex;
+          justify-content: center;
+          align-items: flex-start;
+          background-color: #e2e8f0;
+          height: 100vh;
+        }
+        #root {
+          width: 390px;
+          max-width: 390px;
+          height: 100%;
+          box-shadow: 0 0 40px rgba(0,0,0,0.2);
+          position: relative;
+          overflow-y: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

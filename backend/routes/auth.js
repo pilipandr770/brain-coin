@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
       `INSERT INTO users (name, email, password_hash, role, age, grade, ui_language)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, name, email, role, age, grade, ui_language, total_coins, avatar_emoji,
-                 content_settings, is_admin, sub_status, trial_ends_at, sub_current_period_end`,  
+                 content_settings, subscription_status, subscription_end`,
       [name.trim(), email.toLowerCase(), hash, role, age || null, grade || null, lang]
     );
     const user = rows[0];

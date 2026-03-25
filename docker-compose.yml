@@ -25,7 +25,7 @@ services:
       DATABASE_URL: postgresql://braincoin_user:braincoin_pass@postgres:5432/braincoin
       JWT_SECRET: br41nc01n-super-secret-2026-change-in-production
       PORT: 3001
-      CORS_ORIGIN: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3000,http://localhost:8081
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
