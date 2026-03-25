@@ -16,7 +16,7 @@ const { pool } = require('../db');
 // Creates a new Stripe Checkout session and returns the URL.
 // The price is identified by STRIPE_PRICE_ID env var (€5/month, recurring).
 router.post('/checkout', auth, async (req, res) => {
-  if (req.user.role !== 'parent') {
+  if (!['parent','admin'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Parents only' });
   }
 
@@ -134,7 +134,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 // ─── Billing Portal ────────────────────────────────────────────────────────
 // Returns a short-lived URL for the Stripe customer portal (cancel, update card, etc.)
 router.get('/portal', auth, async (req, res) => {
-  if (req.user.role !== 'parent') {
+  if (!['parent','admin'].includes(req.user.role)) {
     return res.status(403).json({ error: 'Parents only' });
   }
 

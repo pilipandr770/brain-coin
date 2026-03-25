@@ -110,7 +110,7 @@ router.patch('/me/avatar', auth, async (req, res) => {
 
 // ── Parent: get/set content settings for a child ─────────────────────────────
 router.get('/children/:childId/settings', auth, async (req, res) => {
-  if (req.user.role !== 'parent') return res.status(403).json({ error: 'Parents only' });
+  if (!['parent','admin'].includes(req.user.role)) return res.status(403).json({ error: 'Parents only' });
   const childId = parseInt(req.params.childId);
   try {
     // Verify relationship
@@ -130,7 +130,7 @@ router.get('/children/:childId/settings', auth, async (req, res) => {
 });
 
 router.patch('/children/:childId/settings', auth, async (req, res) => {
-  if (req.user.role !== 'parent') return res.status(403).json({ error: 'Parents only' });
+  if (!['parent','admin'].includes(req.user.role)) return res.status(403).json({ error: 'Parents only' });
   const childId = parseInt(req.params.childId);
   const { block_religion, block_politics, block_conflicts, block_mature, safe_mode } = req.body;
   const settings = {
@@ -228,7 +228,7 @@ router.post('/invite/accept', auth, async (req, res) => {
 
 // ── Get children for parent ───────────────────────────────────────────────────
 router.get('/children', auth, async (req, res) => {
-  if (req.user.role !== 'parent') return res.status(403).json({ error: 'Только для родителей' });
+  if (!['parent','admin'].includes(req.user.role)) return res.status(403).json({ error: 'Только для родителей' });
   try {
     const { rows } = await pool.query(
       `SELECT u.id, u.name, u.age, u.total_coins, u.avatar_emoji,
@@ -264,7 +264,7 @@ router.get('/parents', auth, async (req, res) => {
 
 // ── Parent creates child account ──────────────────────────────────────────────
 router.post('/children', auth, async (req, res) => {
-  if (req.user.role !== 'parent') return res.status(403).json({ error: 'Только для родителей' });
+  if (!['parent','admin'].includes(req.user.role)) return res.status(403).json({ error: 'Только для родителей' });
   const { name, email, password, age } = req.body;
   if (!name || !email || !password) return res.status(400).json({ error: 'Заполните все поля' });
   if (password.length < 6) return res.status(400).json({ error: 'Пароль не менее 6 символов' });

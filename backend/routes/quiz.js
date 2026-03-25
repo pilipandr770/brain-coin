@@ -246,7 +246,7 @@ router.post('/sessions/practice', auth, async (req, res) => {
 
 // ── Parent stats for a specific child ────────────────────────────────────────
 router.get('/stats/child/:childId', auth, async (req, res) => {
-  if (req.user.role !== 'parent') return res.status(403).json({ error: 'Forbidden' });
+  if (!['parent','admin'].includes(req.user.role)) return res.status(403).json({ error: 'Forbidden' });
 
   try {
     // Verify this child belongs to the requesting parent
