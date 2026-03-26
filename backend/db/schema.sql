@@ -159,6 +159,20 @@ CREATE TABLE IF NOT EXISTS child_question_mastery (
   PRIMARY KEY (child_id, question_id)
 );
 
+-- Friend challenges (duels)
+CREATE TABLE IF NOT EXISTS challenges (
+  id               SERIAL PRIMARY KEY,
+  challenger_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  challenged_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  subject_id       INTEGER NOT NULL REFERENCES subjects(id) ON DELETE CASCADE,
+  grade            INTEGER NOT NULL,
+  status           VARCHAR(20) DEFAULT 'pending',  -- pending | active | done | rejected
+  question_ids     JSONB,          -- array of 5 question IDs (set on creation)
+  challenger_score INTEGER,        -- null until that player finishes
+  challenged_score INTEGER,
+  created_at       TIMESTAMP DEFAULT NOW()
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_pc_parent    ON parent_child(parent_id);
 CREATE INDEX IF NOT EXISTS idx_pc_child     ON parent_child(child_id);

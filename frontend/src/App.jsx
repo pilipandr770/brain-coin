@@ -22,6 +22,7 @@ import ResultsScreen   from './screens/child/ResultsScreen';
 import Leaderboard     from './screens/child/Leaderboard';
 import FriendsScreen   from './screens/child/FriendsScreen';
 import ChatScreen      from './screens/child/ChatScreen';
+import ChallengeScreen from './screens/child/ChallengeScreen';
 import MistakeReview   from './screens/child/MistakeReview';
 
 function Guard({ children, role }) {
@@ -71,6 +72,7 @@ export default function App() {
           <Route path="/child/quiz/:sessionId" element={<Guard role="child"><QuizScreen /></Guard>} />
           <Route path="/child/results/:sessionId" element={<Guard role="child"><ResultsScreen /></Guard>} />
           <Route path="/child/mistakes" element={<Guard role="child"><MistakeReview /></Guard>} />
+          <Route path="/child/challenges" element={<Guard role="child"><ChallengeScreen /></Guard>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

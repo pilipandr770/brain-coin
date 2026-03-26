@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
-function FriendCard({ item, onAccept, onReject, onChat }) {
+function FriendCard({ item, onAccept, onReject, onChat, onChallenge }) {
   const isIncoming = item.status === 'pending' && item.requester_id !== undefined;
 
   return (
@@ -15,12 +15,21 @@ function FriendCard({ item, onAccept, onReject, onChat }) {
       </div>
       <div className="flex gap-2">
         {item.status === 'accepted' && (
-          <button
-            onClick={() => onChat(item.friend_id)}
-            className="bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg active:scale-95 transition"
-          >
-            💬
-          </button>
+          <>
+            <button
+              onClick={() => onChallenge(item)}
+              className="bg-purple-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg active:scale-95 transition"
+              title="Herausforderung senden"
+            >
+              ⚡
+            </button>
+            <button
+              onClick={() => onChat(item.friend_id)}
+              className="bg-indigo-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg active:scale-95 transition"
+            >
+              💬
+            </button>
+          </>
         )}
         {item.status === 'pending' && item.requester_id !== undefined && (
           <>
@@ -119,6 +128,7 @@ export default function FriendsScreen() {
                 onAccept={(id) => handleAction(id, 'accept')}
                 onReject={(id) => handleAction(id, 'reject')}
                 onChat={(friendId) => nav(`/child/friends/${friendId}/chat`, { state: { friend: f } })}
+                onChallenge={(item) => nav('/child/challenges', { state: { newChallengeFriend: item } })}
               />
             ))
           )

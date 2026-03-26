@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, Trophy, Users, AlertCircle, LogOut } from 'lucide-react';
+import { Home, Trophy, Users, AlertCircle, Zap, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ChildLayout() {
@@ -37,9 +37,10 @@ export default function ChildLayout() {
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-800 border-t border-slate-700 z-20">
         <div className="max-w-2xl mx-auto flex justify-around">
           {[
-            { to: '/child',              icon: Home,         label: 'Start',         end: true },
+            { to: '/child',              icon: Home,         label: 'Start',      end: true },
             { to: '/child/leaderboard',  icon: Trophy,       label: 'Rangliste' },
             { to: '/child/friends',      icon: Users,        label: 'Freunde' },
+            { to: '/child/challenges',   icon: Zap,          label: 'Duelle' },
             { to: '/child/mistakes',     icon: AlertCircle,  label: 'Fehleranalyse' },
           ].map(({ to, icon: Icon, label, end }) => (
             <NavLink
