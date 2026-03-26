@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, BarChart3, Gift, Settings, LogOut } from 'lucide-react';
+import { Home, BarChart3, Gift, Settings, LogOut, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ParentLayout() {
@@ -19,9 +19,16 @@ export default function ParentLayout() {
             <p className="text-blue-200 text-xs">{'Eltern-Panel'}</p>
           </div>
         </div>
-        <button onClick={onLogout} className="p-2 hover:bg-blue-600 rounded-xl transition-colors">
-          <LogOut className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          {user?.role === 'admin' && (
+            <button onClick={() => nav('/admin')} className="p-2 hover:bg-blue-600 rounded-xl transition-colors" title="Admin-Panel">
+              <ShieldCheck className="w-5 h-5" />
+            </button>
+          )}
+          <button onClick={onLogout} className="p-2 hover:bg-blue-600 rounded-xl transition-colors">
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Content */}

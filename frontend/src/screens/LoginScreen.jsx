@@ -19,7 +19,7 @@ export default function LoginScreen() {
     try {
       const { data } = await api.post('/auth/login', form);
       login(data.token, data.user);
-      nav(data.user.role === 'parent' ? '/parent' : '/child', { replace: true });
+      nav(data.user.role === 'admin' ? '/admin' : data.user.role === 'parent' ? '/parent' : '/child', { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || 'Fehler');
     } finally {
