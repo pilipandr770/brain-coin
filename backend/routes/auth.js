@@ -195,10 +195,10 @@ router.post('/invite/accept', auth, async (req, res) => {
     const myRole = req.user.role;
 
     let parentId, childId;
-    if (inviterRole === 'parent' && myRole === 'child') {
+    if ((inviterRole === 'parent' || inviterRole === 'admin') && myRole === 'child') {
       parentId = invite.created_by;
       childId = req.user.id;
-    } else if (inviterRole === 'child' && myRole === 'parent') {
+    } else if (inviterRole === 'child' && (myRole === 'parent' || myRole === 'admin')) {
       parentId = req.user.id;
       childId = invite.created_by;
     } else {
