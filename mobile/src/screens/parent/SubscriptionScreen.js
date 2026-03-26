@@ -7,7 +7,9 @@ import api from '../../api';
 
 // Payments happen on the web — no in-app purchase (avoids 30% App Store / Google Play fee).
 // The app only shows subscription status and redirects to the website for payment management.
-const WEB_URL = 'http://localhost:3000/parent/payment'; // change to production URL when deploying
+const WEB_URL = __DEV__
+  ? 'http://localhost:3000/parent/payment'
+  : 'https://braincoin.onrender.com/parent/payment';
 
 const FEATURES = [
   { emoji: '🤖', text: 'KI-generierte Fragen in 12+ Fächern' },

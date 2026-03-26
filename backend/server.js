@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
+const cors    = require('cors');
+const path    = require('path');
+const fs      = require('fs');
 const { pool } = require('./db');
 
 const app = express();
@@ -38,5 +40,31 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
+// Production: serve the built React app from backend/public/
+// The frontend build is copied here during the Render build step.
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'public')));
+  // SPA fallback — all non-API routes serve index.html
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+}
+
+// Auto-run DB migrations on every startup (all files are idempotent)
+async function runMigrations() {
+  const files = ['schema.sql', 'migrate_subscription.sql', 'seed.sql'];
+  for (const file of files) {
+    try {
+      const sql = fs.readFileSync(path.join(__dirname, 'db', file), 'utf8');
+      await pool.query(sql);
+      console.log(`✓ migration: ${file}`);
+    } catch (err) {
+      console.error(`✗ migration ${file}:`, err.message);
+    }
+  }
+}
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`BrainCoin API → http://localhost:${PORT}`));
+runMigrations().then(() => {
+  app.listen(PORT, () => console.log(`BrainCoin API → http://localhost:${PORT}`));
+});
