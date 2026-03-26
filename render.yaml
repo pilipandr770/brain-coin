@@ -12,15 +12,9 @@ databases:
 services:
   - type: web
     name: braincoin
-    runtime: node
-    plan: free
-    # Root of the repo — both frontend/ and backend/ live here
-    buildCommand: >-
-      npm install --prefix frontend &&
-      npm run build --prefix frontend &&
-      cp -r frontend/dist backend/public &&
-      npm install --prefix backend --omit=dev
-    startCommand: node backend/server.js
+    runtime: docker
+    plan: starter
+    # Uses the root Dockerfile (multi-stage: builds frontend, runs backend)
     envVars:
       - key: NODE_ENV
         value: production
