@@ -1,3 +1,9 @@
+# ─────────────────────────────────────────────────────────────
+# LOCAL DEVELOPMENT only — production runs via render.yaml
+# Usage: docker compose up -d --build
+# Secrets for STRIPE/ANTHROPIC are loaded from .env
+# ─────────────────────────────────────────────────────────────
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -23,21 +29,25 @@ services:
     container_name: braincoin_api
     restart: unless-stopped
     environment:
+      NODE_ENV: development               # keeps static-file serving OFF locally
       DATABASE_URL: postgresql://braincoin_user:braincoin_pass@postgres:5432/braincoin
-      JWT_SECRET: br41nc01n-super-secret-2026-change-in-production
+      JWT_SECRET: ${JWT_SECRET:-br41nc01n-local-dev-secret}
       PORT: 3001
-      CORS_ORIGIN: http://localhost:3000,http://localhost:8081
+      FRONTEND_URL: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3000,http://localhost:5173,http://localhost:8081
+      # Loaded from .env file
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
       STRIPE_PRICE_ID: ${STRIPE_PRICE_ID}
-      FRONTEND_URL: ${FRONTEND_URL}
     ports:
       - "3001:3001"
     depends_on:
       postgres:
         condition: service_healthy
 
+  # Local dev: separate nginx container serves the Vite build
+  # On Render (prod): backend serves frontend/dist via express.static
   frontend:
     build: ./frontend
     container_name: braincoin_frontend
