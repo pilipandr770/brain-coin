@@ -11,7 +11,7 @@ databases:
 
 services:
   - type: web
-    name: braincoin
+    name: brain-coin
     runtime: docker
     plan: starter
     # Uses the root Dockerfile (multi-stage: builds frontend, runs backend)
@@ -31,9 +31,12 @@ services:
 
       # The public URL of this service on Render
       # Used by Stripe redirect URLs (success/cancel)
-      # Change to your custom domain once connected
       - key: FRONTEND_URL
-        value: https://braincoin.onrender.com
+        value: https://brain-coin.onrender.com
+
+      # Allow CORS from the Render service URL
+      - key: CORS_ORIGIN
+        value: https://brain-coin.onrender.com
 
       # ── Fill these in Render Dashboard → Environment ──
       - key: STRIPE_SECRET_KEY

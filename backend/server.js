@@ -13,11 +13,26 @@ const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin) return callback(null, true); // non-browser / same-origin requests
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    // In production also allow any *.onrender.com subdomain (covers service URL)
+    if (process.env.NODE_ENV === 'production' && /\.onrender\.com$/.test(origin)) {
+      return callback(null, true);
+    }
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));
+
+// Production: serve the built React app from backend/public/
+// Must be BEFORE API routes so assets are served directly without going
+// through Express JSON / auth middleware.
+if (process.env.NODE_ENV === 'production') {
+  const publicDir = path.join(__dirname, 'public');
+  const publicExists = fs.existsSync(publicDir);
+  console.log(`Static dir ${publicDir}: ${publicExists ? 'OK' : 'NOT FOUND'}`);
+  if (publicExists) app.use(express.static(publicDir));
+}
 
 // Stripe webhook needs raw body — must be mounted BEFORE express.json()
 app.use('/api/payments/webhook', require('./routes/payments'));
@@ -40,13 +55,12 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
-// Production: serve the built React app from backend/public/
-// The frontend build is copied here during the Render build step.
+// SPA fallback — must be AFTER all API routes, ONLY in production
+// Serves index.html for any non-API route so React Router works
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'public')));
-  // SPA fallback — all non-API routes serve index.html
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  app.get('*', (_req, res, next) => {
+    const f = path.join(__dirname, 'public', 'index.html');
+    res.sendFile(f, err => { if (err) next(err); });
   });
 }
 
