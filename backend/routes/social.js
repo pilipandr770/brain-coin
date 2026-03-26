@@ -1,4 +1,4 @@
-const router = require('express').Router();
+﻿const router = require('express').Router();
 const { pool } = require('../db');
 const auth = require('../middleware/auth');
 
@@ -19,7 +19,7 @@ router.get('/leaderboard', auth, async (req, res) => {
     );
     res.json(rows);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -38,7 +38,7 @@ router.get('/friends', auth, async (req, res) => {
     );
     res.json(rows);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -46,20 +46,20 @@ router.get('/friends', auth, async (req, res) => {
 router.post('/friends/request', auth, async (req, res) => {
   const { addressee_id } = req.body;
   if (!addressee_id || addressee_id === req.user.id)
-    return res.status(400).json({ error: 'Неверный запрос' });
+    return res.status(400).json({ error: 'Ungültige Anfrage' });
 
   try {
     const target = await pool.query(
       "SELECT id, role FROM users WHERE id=$1 AND role='child'",
       [addressee_id]
     );
-    if (!target.rows[0]) return res.status(404).json({ error: 'Игрок не найден' });
+    if (!target.rows[0]) return res.status(404).json({ error: 'Spieler nicht gefunden' });
 
     const dup = await pool.query(
       'SELECT id FROM friendships WHERE (requester_id=$1 AND addressee_id=$2) OR (requester_id=$2 AND addressee_id=$1)',
       [req.user.id, addressee_id]
     );
-    if (dup.rows[0]) return res.status(409).json({ error: 'Запрос уже существует' });
+    if (dup.rows[0]) return res.status(409).json({ error: 'Anfrage existiert bereits' });
 
     const { rows } = await pool.query(
       'INSERT INTO friendships (requester_id, addressee_id) VALUES ($1,$2) RETURNING *',
@@ -68,7 +68,7 @@ router.post('/friends/request', auth, async (req, res) => {
     res.status(201).json(rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -76,7 +76,7 @@ router.post('/friends/request', auth, async (req, res) => {
 router.put('/friends/:id', auth, async (req, res) => {
   const { action } = req.body;
   if (!['accept', 'reject'].includes(action))
-    return res.status(400).json({ error: 'action должен быть accept или reject' });
+    return res.status(400).json({ error: 'action muss accept oder reject sein' });
 
   try {
     const newStatus = action === 'accept' ? 'accepted' : 'rejected';
@@ -84,10 +84,10 @@ router.put('/friends/:id', auth, async (req, res) => {
       "UPDATE friendships SET status=$1 WHERE id=$2 AND addressee_id=$3 AND status='pending' RETURNING *",
       [newStatus, req.params.id, req.user.id]
     );
-    if (!rows[0]) return res.status(404).json({ error: 'Запрос не найден' });
+    if (!rows[0]) return res.status(404).json({ error: 'Anfrage nicht gefunden' });
     res.json(rows[0]);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -99,7 +99,7 @@ router.get('/messages/:friendId', auth, async (req, res) => {
       "SELECT id FROM friendships WHERE ((requester_id=$1 AND addressee_id=$2) OR (requester_id=$2 AND addressee_id=$1)) AND status='accepted'",
       [req.user.id, friendId]
     );
-    if (!ok.rows[0]) return res.status(403).json({ error: 'Нет доступа' });
+    if (!ok.rows[0]) return res.status(403).json({ error: 'Kein Zugriff' });
 
     const { rows } = await pool.query(
       `SELECT m.*, u.name AS sender_name, u.avatar_emoji AS sender_avatar
@@ -118,7 +118,7 @@ router.get('/messages/:friendId', auth, async (req, res) => {
     );
     res.json(rows);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -126,16 +126,16 @@ router.get('/messages/:friendId', auth, async (req, res) => {
 router.post('/messages', auth, async (req, res) => {
   const { receiver_id, content } = req.body;
   if (!receiver_id || !content?.trim())
-    return res.status(400).json({ error: 'Введите сообщение' });
+    return res.status(400).json({ error: 'Nachricht eingeben' });
   if (content.length > 1000)
-    return res.status(400).json({ error: 'Сообщение слишком длинное' });
+    return res.status(400).json({ error: 'Nachricht zu lang' });
 
   try {
     const ok = await pool.query(
       "SELECT id FROM friendships WHERE ((requester_id=$1 AND addressee_id=$2) OR (requester_id=$2 AND addressee_id=$1)) AND status='accepted'",
       [req.user.id, receiver_id]
     );
-    if (!ok.rows[0]) return res.status(403).json({ error: 'Нет доступа' });
+    if (!ok.rows[0]) return res.status(403).json({ error: 'Kein Zugriff' });
 
     const { rows } = await pool.query(
       'INSERT INTO messages (sender_id, receiver_id, content) VALUES ($1,$2,$3) RETURNING *',
@@ -143,7 +143,7 @@ router.post('/messages', auth, async (req, res) => {
     );
     res.status(201).json(rows[0]);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 

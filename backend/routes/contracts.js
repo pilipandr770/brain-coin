@@ -1,4 +1,4 @@
-const router = require('express').Router();
+﻿const router = require('express').Router();
 const { pool } = require('../db');
 const auth = require('../middleware/auth');
 
@@ -29,7 +29,7 @@ router.get('/', auth, async (req, res) => {
     res.json(rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -63,7 +63,7 @@ router.post('/', auth, async (req, res) => {
       "SELECT id FROM parent_child WHERE parent_id=$1 AND child_id=$2 AND status='accepted'",
       [finalParentId, finalChildId]
     );
-    if (!rel.rows[0]) return res.status(403).json({ error: 'Нет подтверждённой связи родитель–ребёнок' });
+    if (!rel.rows[0]) return res.status(403).json({ error: 'Keine bestätigte Eltern-Kind-Verbindung' });
 
     const { rows } = await pool.query(
       `INSERT INTO contracts
@@ -85,7 +85,7 @@ router.post('/', auth, async (req, res) => {
     res.status(201).json(rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -104,10 +104,10 @@ router.get('/:id', auth, async (req, res) => {
        WHERE c.id = $1 AND (c.parent_id = $2 OR c.child_id = $2)`,
       [req.params.id, req.user.id]
     );
-    if (!rows[0]) return res.status(404).json({ error: 'Контракт не найден' });
+    if (!rows[0]) return res.status(404).json({ error: 'Vertrag nicht gefunden' });
     res.json(rows[0]);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -115,7 +115,7 @@ router.get('/:id', auth, async (req, res) => {
 router.post('/:id/accept', auth, async (req, res) => {
   try {
     const cur = await pool.query('SELECT * FROM contracts WHERE id = $1', [req.params.id]);
-    if (!cur.rows[0]) return res.status(404).json({ error: 'Контракт не найден' });
+    if (!cur.rows[0]) return res.status(404).json({ error: 'Vertrag nicht gefunden' });
     const c = cur.rows[0];
 
     if (req.user.role === 'child' && c.child_id === req.user.id) {
@@ -123,7 +123,7 @@ router.post('/:id/accept', auth, async (req, res) => {
     } else if (req.user.role === 'parent' && c.parent_id === req.user.id) {
       await pool.query('UPDATE contracts SET parent_accepted = true WHERE id = $1', [req.params.id]);
     } else {
-      return res.status(403).json({ error: 'Нет доступа' });
+      return res.status(403).json({ error: 'Kein Zugriff' });
     }
 
     const updated = await pool.query('SELECT * FROM contracts WHERE id = $1', [req.params.id]);
@@ -135,7 +135,7 @@ router.post('/:id/accept', auth, async (req, res) => {
     res.json(u);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -146,10 +146,10 @@ router.post('/:id/reject', auth, async (req, res) => {
       "UPDATE contracts SET status='rejected' WHERE id=$1 AND (parent_id=$2 OR child_id=$2) RETURNING *",
       [req.params.id, req.user.id]
     );
-    if (!rows[0]) return res.status(404).json({ error: 'Контракт не найден' });
+    if (!rows[0]) return res.status(404).json({ error: 'Vertrag nicht gefunden' });
     res.json(rows[0]);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 

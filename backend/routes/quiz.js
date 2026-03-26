@@ -1,4 +1,4 @@
-const router = require('express').Router();
+﻿const router = require('express').Router();
 const { pool } = require('../db');
 const auth = require('../middleware/auth');
 const { ensureAndPickQuestions } = require('../services/questionGenerator');
@@ -16,7 +16,7 @@ router.get('/subjects', auth, async (_req, res) => {
 // ── Preview questions for a subject + grade (no session) ─────────────────────
 router.get('/questions', auth, async (req, res) => {
   const { subject_id, grade, limit = 10 } = req.query;
-  if (!subject_id || !grade) return res.status(400).json({ error: 'Укажите предмет и класс' });
+  if (!subject_id || !grade) return res.status(400).json({ error: 'Fach und Klasse angeben' });
   try {
     const { rows } = await pool.query(
       'SELECT id, text, answers, difficulty FROM questions WHERE subject_id=$1 AND grade=$2 ORDER BY RANDOM() LIMIT $3',
@@ -24,14 +24,14 @@ router.get('/questions', auth, async (req, res) => {
     );
     res.json(rows);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
 // ── Start a quiz session ──────────────────────────────────────────────────────
 router.post('/sessions', auth, async (req, res) => {
   const { contract_id } = req.body;
-  if (!contract_id) return res.status(400).json({ error: 'Укажите контракт' });
+  if (!contract_id) return res.status(400).json({ error: 'Vertrag angeben' });
 
   try {
     const { rows: cr } = await pool.query(
@@ -67,7 +67,7 @@ router.post('/sessions', auth, async (req, res) => {
     res.status(201).json({ session: sr[0], questions: safeQuestions, contract });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -75,7 +75,7 @@ router.post('/sessions', auth, async (req, res) => {
 router.post('/sessions/:id/answer', auth, async (req, res) => {
   const { question_id, answer_index, time_taken } = req.body;
   if (answer_index === undefined || !question_id)
-    return res.status(400).json({ error: 'Неверные данные' });
+    return res.status(400).json({ error: 'Ungültige Daten' });
 
   try {
     const { rows: sr } = await pool.query(
@@ -85,13 +85,13 @@ router.post('/sessions/:id/answer', auth, async (req, res) => {
        WHERE qs.id=$1 AND qs.child_id=$2 AND qs.completed_at IS NULL`,
       [req.params.id, req.user.id]
     );
-    if (!sr[0]) return res.status(404).json({ error: 'Сессия не найдена' });
+    if (!sr[0]) return res.status(404).json({ error: 'Sitzung nicht gefunden' });
     const session = sr[0];
 
     // Verify question belongs to this session (parseInt guards against JSONB string vs number)
     const ids = (session.question_ids || []).map(Number);
     if (!ids.includes(Number(question_id)))
-      return res.status(400).json({ error: 'Вопрос не принадлежит этой сессии' });
+      return res.status(400).json({ error: 'Frage gehört nicht zu dieser Sitzung' });
 
     // Check not already answered — return correct info so client can show feedback
     const already = await pool.query(
@@ -101,7 +101,7 @@ router.post('/sessions/:id/answer', auth, async (req, res) => {
     if (already.rows[0]) {
       const { rows: qr2 } = await pool.query('SELECT correct_index FROM questions WHERE id=$1', [question_id]);
       return res.status(409).json({
-        error: 'Вопрос уже отвечен',
+        error: 'Frage bereits beantwortet',
         isCorrect: already.rows[0].is_correct,
         correctIndex: qr2[0]?.correct_index ?? null,
         points: 0,
@@ -112,7 +112,7 @@ router.post('/sessions/:id/answer', auth, async (req, res) => {
       'SELECT correct_index FROM questions WHERE id=$1',
       [question_id]
     );
-    if (!qr[0]) return res.status(404).json({ error: 'Вопрос не найден' });
+    if (!qr[0]) return res.status(404).json({ error: 'Frage nicht gefunden' });
 
     const isCorrect = qr[0].correct_index === answer_index;
     const delta = isCorrect ? session.points_per_correct : -session.penalty_per_wrong;
@@ -140,7 +140,7 @@ router.post('/sessions/:id/answer', auth, async (req, res) => {
     res.json({ isCorrect, points: delta, correctIndex: qr[0].correct_index });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -154,7 +154,7 @@ router.post('/sessions/:id/complete', auth, async (req, res) => {
        WHERE qs.id=$1 AND qs.child_id=$2 AND qs.completed_at IS NULL`,
       [req.params.id, req.user.id]
     );
-    if (!sr[0]) return res.status(404).json({ error: 'Сессия не найдена' });
+    if (!sr[0]) return res.status(404).json({ error: 'Sitzung nicht gefunden' });
     const session = sr[0];
 
     await pool.query('UPDATE quiz_sessions SET completed_at = NOW() WHERE id = $1', [req.params.id]);
@@ -177,7 +177,7 @@ router.post('/sessions/:id/complete', auth, async (req, res) => {
       ]);
       await pool.query(
         'INSERT INTO coin_transactions (user_id, contract_id, session_id, amount, type, description) VALUES ($1,$2,$3,$4,$5,$6)',
-        [req.user.id, session.cid, req.params.id, earned, 'earn', 'Тест завершён']
+        [req.user.id, session.cid, req.params.id, earned, 'earn', 'Test abgeschlossen']
       );
     }
 
@@ -188,7 +188,7 @@ router.post('/sessions/:id/complete', auth, async (req, res) => {
     res.json(final[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 

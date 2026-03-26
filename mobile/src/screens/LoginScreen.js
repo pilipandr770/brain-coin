@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ActivityIndicator, Alert, ScrollView,
@@ -28,7 +28,7 @@ export default function LoginScreen({ navigation }) {
       });
       await login(data.token, data.user);
     } catch (e) {
-      Alert.alert('Ошибка', e.response?.data?.error || 'Login failed');
+      Alert.alert('Fehler', e.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }

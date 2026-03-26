@@ -1,4 +1,4 @@
-const router = require('express').Router();
+﻿const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -47,23 +47,23 @@ router.post('/register', async (req, res) => {
 // ── Login ─────────────────────────────────────────────────────────────────────
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Введите email и пароль' });
+  if (!email || !password) return res.status(400).json({ error: 'E-Mail und Passwort eingeben' });
 
   try {
     const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [
       email.toLowerCase(),
     ]);
     const user = rows[0];
-    if (!user) return res.status(401).json({ error: 'Неверный email или пароль' });
+    if (!user) return res.status(401).json({ error: 'Ungültige E-Mail oder Passwort' });
 
     const ok = await bcrypt.compare(password, user.password_hash);
-    if (!ok) return res.status(401).json({ error: 'Неверный email или пароль' });
+    if (!ok) return res.status(401).json({ error: 'Ungültige E-Mail oder Passwort' });
 
     const { password_hash, ...safe } = user;
     res.json({ token: sign(safe), user: safe });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
@@ -170,25 +170,25 @@ router.post('/invite/generate', auth, async (req, res) => {
     res.json({ code, expiresAt });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
 // ── Accept invite code (link parent ↔ child) ─────────────────────────────────
 router.post('/invite/accept', auth, async (req, res) => {
   const { code } = req.body;
-  if (!code) return res.status(400).json({ error: 'Введите код приглашения' });
+  if (!code) return res.status(400).json({ error: 'Einladungscode eingeben' });
 
   try {
     const inv = await pool.query(
       "SELECT * FROM invite_codes WHERE code = $1 AND used_by IS NULL AND expires_at > NOW()",
       [code.toUpperCase()]
     );
-    if (!inv.rows[0]) return res.status(404).json({ error: 'Код не найден или истёк' });
+    if (!inv.rows[0]) return res.status(404).json({ error: 'Code nicht gefunden oder abgelaufen' });
 
     const invite = inv.rows[0];
     if (invite.created_by === req.user.id)
-      return res.status(400).json({ error: 'Нельзя использовать свой код' });
+      return res.status(400).json({ error: 'Eigenen Code nicht verwenden' });
 
     const inviter = await pool.query('SELECT role FROM users WHERE id = $1', [invite.created_by]);
     const inviterRole = inviter.rows[0].role;
@@ -202,7 +202,7 @@ router.post('/invite/accept', auth, async (req, res) => {
       parentId = req.user.id;
       childId = invite.created_by;
     } else {
-      return res.status(400).json({ error: 'Код должен быть использован противоположной ролью' });
+      return res.status(400).json({ error: 'Code muss von der anderen Rolle verwendet werden' });
     }
 
     await pool.query(
@@ -219,16 +219,16 @@ router.post('/invite/accept', auth, async (req, res) => {
       'SELECT id, name, role, avatar_emoji FROM users WHERE id = $1',
       [invite.created_by]
     );
-    res.json({ message: 'Связь установлена!', linkedUser: linked.rows[0] });
+    res.json({ message: 'Verknüpfung hergestellt!', linkedUser: linked.rows[0] });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
 // ── Get children for parent ───────────────────────────────────────────────────
 router.get('/children', auth, async (req, res) => {
-  if (!['parent','admin'].includes(req.user.role)) return res.status(403).json({ error: 'Только для родителей' });
+  if (!['parent','admin'].includes(req.user.role)) return res.status(403).json({ error: 'Nur für Eltern' });
   try {
     const { rows } = await pool.query(
       `SELECT u.id, u.name, u.age, u.total_coins, u.avatar_emoji,
@@ -241,13 +241,13 @@ router.get('/children', auth, async (req, res) => {
     );
     res.json(rows);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
 // ── Get parents for child ─────────────────────────────────────────────────────
 router.get('/parents', auth, async (req, res) => {
-  if (req.user.role !== 'child') return res.status(403).json({ error: 'Только для детей' });
+  if (req.user.role !== 'child') return res.status(403).json({ error: 'Nur für Kinder' });
   try {
     const { rows } = await pool.query(
       `SELECT u.id, u.name, u.avatar_emoji
@@ -258,20 +258,20 @@ router.get('/parents', auth, async (req, res) => {
     );
     res.json(rows);
   } catch {
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 
 // ── Parent creates child account ──────────────────────────────────────────────
 router.post('/children', auth, async (req, res) => {
-  if (!['parent','admin'].includes(req.user.role)) return res.status(403).json({ error: 'Только для родителей' });
+  if (!['parent','admin'].includes(req.user.role)) return res.status(403).json({ error: 'Nur für Eltern' });
   const { name, email, password, age } = req.body;
-  if (!name || !email || !password) return res.status(400).json({ error: 'Заполните все поля' });
-  if (password.length < 6) return res.status(400).json({ error: 'Пароль не менее 6 символов' });
+  if (!name || !email || !password) return res.status(400).json({ error: 'Alle Felder ausfüllen' });
+  if (password.length < 6) return res.status(400).json({ error: 'Passwort mindestens 6 Zeichen' });
 
   try {
     const exists = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
-    if (exists.rows.length) return res.status(409).json({ error: 'Email уже используется' });
+    if (exists.rows.length) return res.status(409).json({ error: 'E-Mail bereits vergeben' });
 
     const hash = await bcrypt.hash(password, 12);
     const child = await pool.query(
@@ -287,7 +287,7 @@ router.post('/children', auth, async (req, res) => {
     res.status(201).json(child.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера' });
+    res.status(500).json({ error: 'Serverfehler' });
   }
 });
 

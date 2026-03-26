@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform,
@@ -40,7 +40,7 @@ export default function RegisterScreen({ navigation }) {
       const { data } = await api.post('/auth/register', body);
       await login(data.token, data.user);
     } catch (e) {
-      Alert.alert('Ошибка', e.response?.data?.error || 'Registration failed');
+      Alert.alert('Fehler', e.response?.data?.error || 'Registration failed');
     } finally {
       setLoading(false);
     }

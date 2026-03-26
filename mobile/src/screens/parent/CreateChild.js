@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, ScrollView, KeyboardAvoidingView,
@@ -37,7 +37,7 @@ export default function CreateChild() {
       });
       setDone(true);
     } catch (e) {
-      Alert.alert('Ошибка', e.response?.data?.error || 'Failed to create child');
+      Alert.alert('Fehler', e.response?.data?.error || 'Failed to create child');
     } finally {
       setLoading(false);
     }
@@ -54,7 +54,7 @@ export default function CreateChild() {
         <Text style={styles.successEmoji}>🎉</Text>
         <Text style={styles.successTitle}>{t('parent.childProfileCreated')}</Text>
         <TouchableOpacity style={styles.btn} onPress={reset}>
-          <Text style={styles.btnText}>+ Ещё ребёнок</Text>
+          <Text style={styles.btnText}>+ Weiteres Kind</Text>
         </TouchableOpacity>
       </View>
     );

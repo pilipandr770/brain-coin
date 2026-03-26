@@ -1,4 +1,4 @@
-{
+﻿{
   "app": {
     "name": "BrainCoin",
     "tagline": "Lernen · Verdienen · Gewinnen!"
@@ -310,7 +310,7 @@
     "goHome": "Zur Startseite"
   },
   "languages": {
-    "uk": "Українська",
+    
     "en": "English",
     "de": "Deutsch"
   },
