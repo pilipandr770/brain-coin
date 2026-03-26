@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import api from '../../api';
 
-const GRADE_LIST = ['5','6','7','8','9'];
-const GRADES = { '5': 'Klasse 5', '6': 'Klasse 6', '7': 'Klasse 7', '8': 'Klasse 8', '9': 'Klasse 9' };
+const GRADES = { '4': 'Klasse 4', '5': 'Klasse 5', '6': 'Klasse 6', '7': 'Klasse 7', '8': 'Klasse 8', '9': 'Klasse 9' };
 
 const PRIZE_EMOJIS = ['🏆','🎮','📱','🎧','🎨','🚀','⚽','🎸','📚','🍕'];
 
@@ -19,7 +18,7 @@ export default function ContractCreator() {
   const [form, setForm] = useState({
     child_id:          '',
     subject_id:        '',
-    grade:             '6',
+    grade:             '5',
     title:             '',
     description:       '',
     prize_name:        '',
@@ -33,8 +32,16 @@ export default function ContractCreator() {
 
   const set = (k) => (e) => {
     const v = typeof e === 'object' && e.target ? e.target.value : e;
-    setForm(f => ({ ...f, [k]: v }));
-    if (k === 'prize_coins') setForm(f => ({ ...f, prize_coins: parseInt(v) || 0, target_coins: parseInt(v) || 0 }));
+    if (k === 'subject_id') {
+      // When subject changes, reset grade to first valid grade for that subject
+      const subj = subjects.find(s => s.id === parseInt(v));
+      const validGrades = subj?.grades || ['5'];
+      setForm(f => ({ ...f, subject_id: v, grade: validGrades[0] }));
+    } else if (k === 'prize_coins') {
+      setForm(f => ({ ...f, prize_coins: parseInt(v) || 0, target_coins: parseInt(v) || 0 }));
+    } else {
+      setForm(f => ({ ...f, [k]: v }));
+    }
   };
 
   useEffect(() => {
@@ -43,7 +50,14 @@ export default function ContractCreator() {
         setSubjects(s.data);
         setChildren(c.data);
         if (c.data.length) setForm(f => ({ ...f, child_id: c.data[0].id }));
-        if (s.data.length) setForm(f => ({ ...f, subject_id: s.data[0].id }));
+        if (s.data.length) {
+          const firstSubj = s.data[0];
+          setForm(f => ({
+            ...f,
+            subject_id: firstSubj.id,
+            grade: firstSubj.grades?.[0] || '5',
+          }));
+        }
       });
   }, []);
 
@@ -141,14 +155,14 @@ export default function ContractCreator() {
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">🎓 {'Klasse'}</label>
               <div className="flex gap-2 flex-wrap">
-                {GRADE_LIST.map(g => (
+                {(selectedSubject?.grades || ['5','6','7','8','9']).map(g => (
                   <button
                     key={g}
                     type="button"
                     onClick={() => set('grade')(g)}
                     className={`px-4 py-2 rounded-xl font-bold transition-all border-2 text-sm ${form.grade === g ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'}`}
                   >
-                    {GRADE_LIST[g]}
+                     {GRADES[g]}
                   </button>
                 ))}
               </div>
@@ -289,7 +303,7 @@ export default function ContractCreator() {
                 <span className="text-3xl">{selectedChild?.avatar_emoji}</span>
                 <div>
                   <p className="font-bold text-slate-800">{selectedChild?.name}</p>
-                  <p className="text-xs text-slate-500">{(selectedSubject?.name ?? '')} · {(GRADE_LIST[form.grade] || form.grade)}</p>
+                  <p className="text-xs text-slate-500">{(selectedSubject?.name ?? '')} · {(GRADES[form.grade] || form.grade)}</p>
                 </div>
               </div>
               <p className="text-slate-700 font-semibold text-sm">{form.title || '...'}</p>

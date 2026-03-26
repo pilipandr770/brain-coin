@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api';
 
 const AVATARS = ['😊','🦁','🐯','🦊','🐸','🦄','🐉','🦅','🐺','🦋','🎮','🏆'];
-const GRADES = { '5': 'Klasse 5', '6': 'Klasse 6', '7': 'Klasse 7', '8': 'Klasse 8', '9': 'Klasse 9' };
+const GRADES = { '4': 'Klasse 4', '5': 'Klasse 5', '6': 'Klasse 6', '7': 'Klasse 7', '8': 'Klasse 8', '9': 'Klasse 9' };
 
 
 export default function RegisterScreen() {
@@ -15,7 +15,7 @@ export default function RegisterScreen() {
   const [step, setStep]   = useState(1);
   const [role, setRole]   = useState(null);
   const [avatar, setAvatar] = useState('😊');
-  const [form, setForm]   = useState({ name: '', email: '', password: '', grade: '6' });
+  const [form, setForm]   = useState({ name: '', email: '', password: '', grade: '5' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -146,7 +146,7 @@ export default function RegisterScreen() {
             <div>
               <label className="block text-slate-400 text-sm mb-1">{'Schulklasse'}</label>
               <div className="flex gap-2 flex-wrap">
-                {GRADES.map(g => (
+                {Object.keys(GRADES).map(g => (
                   <button
                     key={g}
                     type="button"

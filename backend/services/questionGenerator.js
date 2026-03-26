@@ -14,7 +14,10 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { pool }  = require('../db');
 
-const MIN_POOL = 30; // keep at least this many questions per subject+grade
+const MIN_POOL = 40; // keep at least this many questions per subject+grade
+
+// Age in years for each grade (German school system)
+const GRADE_AGE = { '4': 10, '5': 11, '6': 12, '7': 13, '8': 14, '9': 15 };
 
 /**
  * Shuffle answers for a question, tracking the new position of the correct answer.
@@ -45,41 +48,43 @@ async function callClaude(subjectName, grade, count, contentSettings = {}) {
   // Build content-filter exclusion block for the prompt
   const exclusions = [];
   if (contentSettings.safe_mode) {
-    exclusions.push('Використовуй виключно фактичні питання (математика, природничі науки, мова). Жодних суспільних, історичних або етичних тем.');
+    exclusions.push('Verwende ausschließlich sachliche Fragen (Mathematik, Naturwissenschaften, Sprache). Keine gesellschaftlichen, historischen oder ethischen Themen.');
   } else {
-    if (contentSettings.block_religion)  exclusions.push('Не став питань про релігію, церкву або духовність.');
-    if (contentSettings.block_politics)  exclusions.push('Не став питань політичного характеру (політики, партії, вожді).');
-    if (contentSettings.block_conflicts) exclusions.push('Не став детальних питань про війни, страти чи насильство.');
-    if (contentSettings.block_mature)    exclusions.push('Не став жодних питань для дорослих чи з експліцитним змістом.');
+    if (contentSettings.block_religion)  exclusions.push('Keine Fragen über Religion, Kirche oder Spiritualität.');
+    if (contentSettings.block_politics)  exclusions.push('Keine politischen Fragen (Politiker, Parteien, politische Führung).');
+    if (contentSettings.block_conflicts) exclusions.push('Keine detaillierten Fragen über Kriege, Hinrichtungen oder Gewalt.');
+    if (contentSettings.block_mature)    exclusions.push('Keine Fragen mit explizitem oder nicht altersgerechtem Inhalt.');
   }
   const exclusionBlock = exclusions.length
-    ? `\n\nОБМЕЖЕННЯ (обов'язково дотримуйся):\n${exclusions.map((e, i) => `${i + 1}. ${e}`).join('\n')}`
+    ? `\n\nEINSCHRÄNKUNGEN (unbedingt einhalten):\n${exclusions.map((e, i) => `${i + 1}. ${e}`).join('\n')}`
     : '';
+
+  const age = GRADE_AGE[grade] || 12;
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-  const prompt = `Ти — вчитель та автор тестових завдань для українських школярів.
+  const prompt = `Du bist ein erfahrener Lehrer und Fragenautor für die deutsche Mittelschule.
 
-Згенеруй рівно ${count} питань з предмету "${subjectName}" для ${grade} класу (шкільна програма України).
+Erstelle genau ${count} Multiple-Choice-Fragen im Fach "${subjectName}" für die ${grade}. Klasse (deutsches Schulsystem, Lehrplan für ca. ${age}-jährige Schülerinnen und Schüler).
 
-ВИМОГИ:
-- Кожне питання по-українськи
-- 4 варіанти відповіді, лише один правильний
-- ПРАВИЛЬНА відповідь ЗАВЖДИ першою (індекс 0) у масиві answers. Ми самі перемішуємо варіанти після генерації — тому correct_index завжди 0.
-- Різноманітні теми в межах шкільної програми ${grade} класу з "${subjectName}"
-- Чіткі та однозначні формулювання
-- Неправильні варіанти мають бути правдоподібними (не абсурдними)
-- Розподіл складності: приблизно 30% easy, 50% medium, 20% hard${exclusionBlock}
+ANFORDERUNGEN:
+- Alle Fragen auf Deutsch
+- 4 Antwortmöglichkeiten, nur eine ist richtig
+- Die RICHTIGE Antwort steht IMMER an erster Stelle (Index 0) im Array "answers". Das Mischen der Optionen übernehmen wir selbst nach der Generierung — daher ist correct_index immer 0.
+- Abwechslungsreiche Themen aus dem deutschen Lehrplan der ${grade}. Klasse für "${subjectName}"
+- Klare und eindeutige Formulierungen, altersgerecht für ${age}-Jährige
+- Falsche Antworten sollen plausibel wirken (nicht absurd)
+- Schwierigkeitsverteilung: ca. 30 % easy, 50 % medium, 20 % hard${exclusionBlock}
 
-Поверни ЛИШЕ JSON-масив без будь-якого іншого тексту. Кожен елемент масиву:
+Gib NUR ein JSON-Array zurück, keinerlei weiterer Text. Jedes Element:
 {
-  "text": "текст питання",
-  "answers": ["ПРАВИЛЬНА відповідь", "хибна 1", "хибна 2", "хибна 3"],
+  "text": "Fragetext",
+  "answers": ["RICHTIGE Antwort", "falsche 1", "falsche 2", "falsche 3"],
   "correct_index": 0,
   "difficulty": "easy"
 }
 
-ВАЖЛИВО: answers[0] ЗАВЖДИ є правильною відповіддю на питання. correct_index завжди 0.`;
+WICHTIG: answers[0] ist IMMER die richtige Antwort. correct_index ist immer 0.`;
 
   const message = await client.messages.create({
     model:     'claude-opus-4-5',
