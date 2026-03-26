@@ -8,10 +8,9 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 
 const AVATARS = ['🧒','👦','👧','🦁','🐯','🐻','🦊','🐸','🚀','⭐','🎮','🧠','🦋','🌟','🦄','🐲'];
-const LANGS   = [{ code: 'de', label: '🇩🇪 Deutsch' }, { code: 'en', label: '🇬🇧 English' }, { code: 'uk', label: '🇺🇦 Українська' }];
 
 export default function ChildProfile() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
 
   const [avatar,   setAvatar]   = useState(user?.avatar_emoji || '🧒');
@@ -36,13 +35,6 @@ export default function ChildProfile() {
     } finally {
       setSaving(false);
     }
-  };
-
-  const handleChangeLang = async (code) => {
-    try {
-      await api.patch('/auth/me/language', { ui_language: code });
-      i18n.changeLanguage(code);
-    } catch { /* ignore */ }
   };
 
   const handleLogout = () => {
@@ -82,22 +74,6 @@ export default function ChildProfile() {
       </View>
       {saving && <ActivityIndicator color="#1d4ed8" style={{ marginTop: 8 }} />}
 
-      {/* Language */}
-      <Text style={styles.sectionTitle}>Sprache</Text>
-      <View style={styles.langRow}>
-        {LANGS.map(l => (
-          <TouchableOpacity
-            key={l.code}
-            style={[styles.langBtn, i18n.language === l.code && styles.langBtnActive]}
-            onPress={() => handleChangeLang(l.code)}
-          >
-            <Text style={[styles.langText, i18n.language === l.code && { color: '#fff' }]}>
-              {l.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
       {/* Info */}
       <View style={styles.infoCard}>
         <Text style={styles.infoRow}>📧 {profile?.email ?? '—'}</Text>
@@ -127,10 +103,6 @@ const styles = StyleSheet.create({
   avatarGrid:     { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: 16, gap: 8 },
   avatarBtn:      { width: 56, height: 56, borderRadius: 14, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#e2e8f0' },
   avatarBtnActive:{ borderColor: '#7c3aed', backgroundColor: '#f3e8ff' },
-  langRow:        { flexDirection: 'row', marginHorizontal: 16, gap: 8 },
-  langBtn:        { flex: 1, padding: 12, borderRadius: 12, backgroundColor: '#fff', alignItems: 'center', borderWidth: 1.5, borderColor: '#e2e8f0' },
-  langBtnActive:  { backgroundColor: '#1d4ed8', borderColor: '#1d4ed8' },
-  langText:       { fontSize: 13, fontWeight: '600', color: '#1e293b' },
   infoCard:       { backgroundColor: '#fff', marginHorizontal: 16, marginTop: 20, borderRadius: 16, padding: 16, gap: 8 },
   infoRow:        { fontSize: 14, color: '#475569' },
   logoutBtn:      { marginHorizontal: 16, marginTop: 24, padding: 16, borderRadius: 14, backgroundColor: '#fee2e2', alignItems: 'center' },

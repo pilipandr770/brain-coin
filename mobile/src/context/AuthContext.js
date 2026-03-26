@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { getItem, setItem, deleteItem } from '../storage';
 import api from '../api';
-import i18n from '../i18n';
 
 const AuthContext = createContext(null);
 
@@ -16,7 +15,6 @@ export function AuthProvider({ children }) {
         if (!token) return;
         const { data } = await api.get('/auth/me');
         setUser(data);
-        if (data.ui_language) i18n.changeLanguage(data.ui_language);
       } catch {
         await deleteItem('bc_token');
       } finally {
@@ -27,7 +25,6 @@ export function AuthProvider({ children }) {
 
   const login = async (token, userData) => {
     await setItem('bc_token', token);
-    if (userData.ui_language) i18n.changeLanguage(userData.ui_language);
     setUser(userData);
   };
 
