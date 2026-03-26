@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 
 export default function LoginScreen() {
   const nav = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -19,6 +20,8 @@ export default function LoginScreen() {
     try {
       const { data } = await api.post('/auth/login', form);
       login(data.token, data.user);
+      const inviteCode = new URLSearchParams(location.search).get('invite');
+      if (inviteCode) { nav(`/invite/${inviteCode}`, { replace: true }); return; }
       nav(data.user.role === 'admin' ? '/admin' : data.user.role === 'parent' ? '/parent' : '/child', { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || 'Fehler');

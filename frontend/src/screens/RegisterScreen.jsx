@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 
@@ -9,6 +9,7 @@ const GRADES = { '4': 'Klasse 4', '5': 'Klasse 5', '6': 'Klasse 6', '7': 'Klasse
 
 export default function RegisterScreen() {
   const nav = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
 
@@ -48,6 +49,8 @@ export default function RegisterScreen() {
         data.user.avatar_emoji = avatar;
       }
       login(data.token, data.user);
+      const inviteCode = new URLSearchParams(location.search).get('invite');
+      if (inviteCode) { nav(`/invite/${inviteCode}`, { replace: true }); return; }
       nav(role === 'parent' ? '/parent' : '/child', { replace: true });
     } catch (err) {
       setError(err.response?.data?.error || 'Fehler');
