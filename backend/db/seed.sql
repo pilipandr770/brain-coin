@@ -3,18 +3,18 @@
 -- =====================================================
 
 INSERT INTO subjects (name, name_en, name_de, slug, emoji, grades) VALUES
-  ('Математика',        'Mathematics',        'Mathematik',          'math',        '🔢', ARRAY['5','6','7','8','9']),
-  ('Англійська мова',   'English',            'Englisch',            'english',     '🇬🇧', ARRAY['5','6','7','8','9']),
-  ('Українська мова',   'Ukrainian language', 'Ukrainische Sprache', 'ukrainian',   '🇺🇦', ARRAY['5','6','7','8','9']),
-  ('Історія',           'History',            'Geschichte',          'history',     '📜', ARRAY['6','7','8','9']),
-  ('Природознавство',   'Natural science',    'Naturkunde',          'science',     '🌱', ARRAY['5','6']),
-  ('Хімія',             'Chemistry',          'Chemie',              'chemistry',   '🧪', ARRAY['7','8','9']),
-  ('Фізика',            'Physics',            'Physik',              'physics',     '⚛️', ARRAY['7','8','9']),
-  ('Біологія',          'Biology',            'Biologie',            'biology',     '🧬', ARRAY['5','6','7','8','9']),
-  ('Географія',         'Geography',          'Geographie',          'geography',   '🌍', ARRAY['5','6','7','8','9']),
-  ('Програмування',     'Programming',        'Programmierung',      'programming', '💻', ARRAY['5','6','7','8','9']),
-  ('Німецька мова',     'German language',    'Deutsch',             'german',      '🇩🇪', ARRAY['5','6','7','8','9'])
-ON CONFLICT (slug) DO NOTHING;
+  ('Mathematik',        'Mathematics',        'Mathematik',          'math',        '🔢', ARRAY['5','6','7','8','9']),
+  ('Englisch',          'English',            'Englisch',            'english',     '🇬🇧', ARRAY['5','6','7','8','9']),
+  ('Ukrainische Sprache','Ukrainian language', 'Ukrainische Sprache', 'ukrainian',  '🇺🇦', ARRAY['5','6','7','8','9']),
+  ('Geschichte',        'History',            'Geschichte',          'history',     '📜', ARRAY['6','7','8','9']),
+  ('Naturkunde',        'Natural science',    'Naturkunde',          'science',     '🌱', ARRAY['5','6']),
+  ('Chemie',            'Chemistry',          'Chemie',              'chemistry',   '🧪', ARRAY['7','8','9']),
+  ('Physik',            'Physics',            'Physik',              'physics',     '⚛️', ARRAY['7','8','9']),
+  ('Biologie',          'Biology',            'Biologie',            'biology',     '🧬', ARRAY['5','6','7','8','9']),
+  ('Geographie',        'Geography',          'Geographie',          'geography',   '🌍', ARRAY['5','6','7','8','9']),
+  ('Programmierung',    'Programming',        'Programmierung',      'programming', '💻', ARRAY['5','6','7','8','9']),
+  ('Deutsch',           'German language',    'Deutsch',             'german',      '🇩🇪', ARRAY['5','6','7','8','9'])
+ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name;
 
 -- =====================
 -- МАТЕМАТИКА — 6 клас
