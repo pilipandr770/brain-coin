@@ -90,4 +90,75 @@ router.patch('/users/:id/subscription', auth, adminOnly, async (req, res) => {
   }
 });
 
+// ── Subject management ────────────────────────────────────────────────────────
+
+// GET /api/admin/subjects — list all subjects
+router.get('/subjects', auth, adminOnly, async (_req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT * FROM subjects ORDER BY name');
+    res.json(rows);
+  } catch {
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+// POST /api/admin/subjects — create new subject
+router.post('/subjects', auth, adminOnly, async (req, res) => {
+  const { name, name_en, slug, emoji, grades } = req.body;
+  if (!name || !slug) return res.status(400).json({ error: 'name und slug erforderlich' });
+
+  // Sanitize slug: lowercase, only a-z and hyphens
+  const cleanSlug = slug.toLowerCase().replace(/[^a-z0-9-]/g, '');
+
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO subjects (name, name_en, name_de, slug, emoji, grades)
+       VALUES ($1, $2, $1, $3, $4, $5) RETURNING *`,
+      [name, name_en || name, cleanSlug, emoji || '📚', grades || ['4','5','6','7','8','9']]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'Slug bereits vergeben' });
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+// PATCH /api/admin/subjects/:id — update subject
+router.patch('/subjects/:id', auth, adminOnly, async (req, res) => {
+  const { name, name_en, emoji, grades } = req.body;
+  try {
+    const { rows } = await pool.query(
+      `UPDATE subjects SET
+         name    = COALESCE($1, name),
+         name_en = COALESCE($2, name_en),
+         name_de = COALESCE($1, name_de),
+         emoji   = COALESCE($3, emoji),
+         grades  = COALESCE($4, grades)
+       WHERE id = $5 RETURNING *`,
+      [name, name_en, emoji, grades, req.params.id]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Nicht gefunden' });
+    res.json(rows[0]);
+  } catch {
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+// DELETE /api/admin/subjects/:id — delete subject (only if no questions/contracts)
+router.delete('/subjects/:id', auth, adminOnly, async (req, res) => {
+  try {
+    const { rows: check } = await pool.query(
+      'SELECT COUNT(*) AS cnt FROM questions WHERE subject_id=$1',
+      [req.params.id]
+    );
+    if (parseInt(check[0].cnt) > 0)
+      return res.status(409).json({ error: `Hat noch ${check[0].cnt} Fragen — zuerst Fragen löschen` });
+
+    await pool.query('DELETE FROM subjects WHERE id=$1', [req.params.id]);
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
 module.exports = router;
