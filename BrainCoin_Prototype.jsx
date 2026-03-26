@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Settings, Home, BarChart3, Gift, User, ChevronRight, Plus, Play, RotateCcw, LogOut, Clock, CheckCircle, XCircle, TrendingUp } from 'lucide-react';
 
 // Mock Data
 const mockChildren = [
-  { id: 1, name: 'Артём', age: 12, coinsToday: 42, accuracy: 87, contracts: 2 },
-  { id: 2, name: 'Маша', age: 10, coinsToday: 35, accuracy: 92, contracts: 1 },
+  { id: 1, name: 'Lukas', age: 12, coinsToday: 42, accuracy: 87, contracts: 2 },
+  { id: 2, name: 'Emma', age: 10, coinsToday: 35, accuracy: 92, contracts: 1 },
 ];
 
 const mockContracts = [
   {
     id: 1,
     childId: 1,
-    subject: 'Математика',
-    grade: '7 клас',
+    subject: 'Mathematik',
+    grade: '7. Klasse',
     progress: 67,
     prize: 'PlayStation 5 🎮',
     status: 'active',
@@ -22,8 +22,8 @@ const mockContracts = [
   {
     id: 2,
     childId: 1,
-    subject: 'Английский',
-    grade: '6 клас',
+    subject: 'Englisch',
+    grade: '6. Klasse',
     progress: 42,
     prize: 'AirPods 🎧',
     status: 'active',
@@ -33,12 +33,12 @@ const mockContracts = [
 ];
 
 const mockQuestions = [
-  { id: 1, text: 'Сколько будет 15 × 7?', subject: 'Математика', answers: ['105', '110', '95', '115'], correct: 0 },
-  { id: 2, text: 'Что такое синоним?', subject: 'Английский', answers: ['Слово с противоположным значением', 'Слово с похожим значением', 'Слово из другого языка', 'Слово множественного числа'], correct: 1 },
-  { id: 3, text: 'Сколько будет 234 ÷ 6?', subject: 'Математика', answers: ['37', '39', '41', '43'], correct: 1 },
-  { id: 4, text: 'Как пишется слово "colour" в американском английском?', subject: 'Английский', answers: ['colour', 'color', 'colur', 'coler'], correct: 1 },
-  { id: 5, text: 'Что будет результатом 12² - 8²?', subject: 'Математика', answers: ['80', '144', '64', '208'], correct: 0 },
-  { id: 6, text: 'Какой герой написал "To be or not to be"?', subject: 'Английский', answers: ['Ромео', 'Гамлет', 'Отелло', 'Макбет'], correct: 1 },
+  { id: 1, text: 'Wie viel ist 15 × 7?', subject: 'Mathematik', answers: ['105', '110', '95', '115'], correct: 0 },
+  { id: 2, text: 'Was ist ein Synonym?', subject: 'Englisch', answers: ['Ein Wort mit gegenteiliger Bedeutung', 'Ein Wort mit ähnlicher Bedeutung', 'Ein Wort aus einer anderen Sprache', 'Ein Wort im Plural'], correct: 1 },
+  { id: 3, text: 'Wie viel ist 234 ÷ 6?', subject: 'Mathematik', answers: ['37', '39', '41', '43'], correct: 1 },
+  { id: 4, text: 'Wie schreibt man "colour" auf amerikanischem Englisch?', subject: 'Englisch', answers: ['colour', 'color', 'colur', 'coler'], correct: 1 },
+  { id: 5, text: 'Was ist das Ergebnis von 12² - 8²?', subject: 'Mathematik', answers: ['80', '144', '64', '208'], correct: 0 },
+  { id: 6, text: 'Welche Figur sagte "To be or not to be"?', subject: 'Englisch', answers: ['Romeo', 'Hamlet', 'Othello', 'Macbeth'], correct: 1 },
 ];
 
 const BrainCoinApp = () => {
@@ -53,8 +53,8 @@ const BrainCoinApp = () => {
   // Contract creator state
   const [contractForm, setContractForm] = useState({
     childId: 1,
-    subject: 'Математика',
-    grade: '5 клас',
+    subject: 'Mathematik',
+    grade: '5. Klasse',
     timePerQuestion: 30,
     pointsPerCorrect: 5,
     penalty: 2,
@@ -170,24 +170,24 @@ const BrainCoinApp = () => {
         <div className="text-center max-w-md">
           <div className="text-6xl mb-6 animate-bounce">🧠💰</div>
           <h1 className="text-5xl font-black text-blue-400 mb-2 tracking-tight">BrainCoin</h1>
-          <p className="text-slate-300 mb-12 text-lg">Вучися і заробляй монети!</p>
+          <p className="text-slate-300 mb-12 text-lg">Lerne und verdiene Münzen!</p>
 
           <div className="space-y-4">
             <button
               onClick={() => handleSelectRole('parent')}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg text-lg"
             >
-              👨‍👩‍👧 Я родитель
+              👨‍👩‍👧 Ich bin Elternteil
             </button>
             <button
               onClick={() => handleSelectRole('child')}
               className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg text-lg"
             >
-              👦 Я ребёнок
+              👦 Ich bin Kind
             </button>
           </div>
 
-          <p className="text-slate-500 mt-10 text-sm">версія 1.0 • 2026</p>
+          <p className="text-slate-500 mt-10 text-sm">Version 1.0 • 2026</p>
         </div>
       </div>
     );
@@ -200,7 +200,7 @@ const BrainCoinApp = () => {
         {/* Header */}
         <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
           <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-slate-900">Панель родителя</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Eltern-Dashboard</h1>
             <button className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
               <Settings className="w-6 h-6 text-slate-600" />
             </button>
@@ -211,24 +211,24 @@ const BrainCoinApp = () => {
         <div className="max-w-2xl mx-auto px-4 py-6">
           {parentTab === 'dashboard' && (
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Дети</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Kinder</h2>
               <div className="space-y-4 mb-6">
                 {mockChildren.map(child => (
                   <div key={child.id} className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <h3 className="font-bold text-slate-900">{child.name}</h3>
-                        <p className="text-sm text-slate-500">{child.age} лет</p>
+                        <p className="text-sm text-slate-500">{child.age} Jahre</p>
                       </div>
                       <span className="text-2xl font-bold text-orange-500">{child.coinsToday} 🪙</span>
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div className="bg-slate-100 rounded p-2">
-                        <p className="text-slate-600">Точність</p>
+                        <p className="text-slate-600">Genauigkeit</p>
                         <p className="font-bold text-green-600">{child.accuracy}%</p>
                       </div>
                       <div className="bg-slate-100 rounded p-2">
-                        <p className="text-slate-600">Контракти</p>
+                        <p className="text-slate-600">Verträge</p>
                         <p className="font-bold text-blue-600">{child.contracts}</p>
                       </div>
                     </div>
@@ -240,20 +240,20 @@ const BrainCoinApp = () => {
                 onClick={() => setCurrentScreen('contractCreator')}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95"
               >
-                <Plus className="w-5 h-5" /> Новий контракт
+                <Plus className="w-5 h-5" /> Neuer Vertrag
               </button>
             </div>
           )}
 
           {parentTab === 'statistics' && (
             <div className="space-y-6">
-              <h2 className="text-lg font-bold text-slate-900">Статистика</h2>
+              <h2 className="text-lg font-bold text-slate-900">Statistik</h2>
 
               {/* Weekly Activity */}
               <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                <h3 className="font-bold text-slate-900 mb-4">Активність (тиждень)</h3>
+                <h3 className="font-bold text-slate-900 mb-4">Aktivität (Woche)</h3>
                 <div className="flex gap-2 items-end h-32">
-                  {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'].map((day, i) => {
+                  {['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map((day, i) => {
                     const height = Math.random() * 80 + 20;
                     return (
                       <div key={day} className="flex-1 flex flex-col items-center">
@@ -267,12 +267,12 @@ const BrainCoinApp = () => {
 
               {/* Weak Topics */}
               <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                <h3 className="font-bold text-slate-900 mb-4">Слабкі теми</h3>
+                <h3 className="font-bold text-slate-900 mb-4">Schwache Themen</h3>
                 <div className="space-y-3">
                   {[
-                    { name: 'Дроби', accuracy: 62 },
-                    { name: 'Граматика англ.', accuracy: 71 },
-                    { name: 'Історія', accuracy: 58 },
+                    { name: 'Brüche', accuracy: 62 },
+                    { name: 'Englische Grammatik', accuracy: 71 },
+                    { name: 'Geschichte', accuracy: 58 },
                   ].map((topic, i) => (
                     <div key={i}>
                       <div className="flex justify-between text-sm mb-1">
@@ -291,14 +291,14 @@ const BrainCoinApp = () => {
 
           {parentTab === 'prizes' && (
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Призи</h2>
-              <p className="text-slate-600">Керування призами буде найскоро...</p>
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Preise</h2>
+              <p className="text-slate-600">Preisverwaltung kommt bald...</p>
             </div>
           )}
 
           {parentTab === 'settings' && (
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Налаштування</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Einstellungen</h2>
               <button
                 onClick={() => {
                   setUserRole(null);
@@ -306,7 +306,7 @@ const BrainCoinApp = () => {
                 }}
                 className="flex items-center gap-2 text-red-600 hover:text-red-700 font-medium"
               >
-                <LogOut className="w-4 h-4" /> Вийти
+                <LogOut className="w-4 h-4" /> Abmelden
               </button>
             </div>
           )}
@@ -316,10 +316,10 @@ const BrainCoinApp = () => {
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 max-w-2xl mx-auto">
           <div className="flex justify-around">
             {[
-              { tab: 'dashboard', icon: Home, label: 'Панель' },
-              { tab: 'statistics', icon: BarChart3, label: 'Статистика' },
-              { tab: 'prizes', icon: Gift, label: 'Призи' },
-              { tab: 'settings', icon: Settings, label: 'Налаштування' },
+              { tab: 'dashboard', icon: Home, label: 'Dashboard' },
+              { tab: 'statistics', icon: BarChart3, label: 'Statistik' },
+              { tab: 'prizes', icon: Gift, label: 'Preise' },
+              { tab: 'settings', icon: Settings, label: 'Einstellungen' },
             ].map(({ tab, icon: Icon, label }) => (
               <button
                 key={tab}
@@ -352,7 +352,7 @@ const BrainCoinApp = () => {
             >
               ←
             </button>
-            <h1 className="text-2xl font-bold text-slate-900">Новий контракт</h1>
+            <h1 className="text-2xl font-bold text-slate-900">Neuer Vertrag</h1>
           </div>
         </div>
 
@@ -361,52 +361,52 @@ const BrainCoinApp = () => {
           <div className="space-y-6">
             {/* Child Selector */}
             <div>
-              <label className="block text-sm font-bold text-slate-900 mb-2">Дитина</label>
+              <label className="block text-sm font-bold text-slate-900 mb-2">Kind</label>
               <select
                 value={contractForm.childId}
                 onChange={(e) => setContractForm({ ...contractForm, childId: parseInt(e.target.value) })}
                 className="w-full border border-slate-300 rounded-lg px-4 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {mockChildren.map(child => (
-                  <option key={child.id} value={child.id}>{child.name} ({child.age} років)</option>
+                  <option key={child.id} value={child.id}>{child.name} ({child.age} Jahre)</option>
                 ))}
               </select>
             </div>
 
             {/* Subject Selector */}
             <div>
-              <label className="block text-sm font-bold text-slate-900 mb-2">Предмет</label>
+              <label className="block text-sm font-bold text-slate-900 mb-2">Fach</label>
               <select
                 value={contractForm.subject}
                 onChange={(e) => setContractForm({ ...contractForm, subject: e.target.value })}
                 className="w-full border border-slate-300 rounded-lg px-4 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option>Математика</option>
-                <option>Английский</option>
-                <option>Історія</option>
-                <option>Природознавство</option>
+                <option>Mathematik</option>
+                <option>Englisch</option>
+                <option>Geschichte</option>
+                <option>Naturkunde</option>
               </select>
             </div>
 
             {/* Grade Selector */}
             <div>
-              <label className="block text-sm font-bold text-slate-900 mb-2">Клас</label>
+              <label className="block text-sm font-bold text-slate-900 mb-2">Klasse</label>
               <select
                 value={contractForm.grade}
                 onChange={(e) => setContractForm({ ...contractForm, grade: e.target.value })}
                 className="w-full border border-slate-300 rounded-lg px-4 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option>5 клас</option>
-                <option>6 клас</option>
-                <option>7 клас</option>
-                <option>8 клас</option>
+                <option>5. Klasse</option>
+                <option>6. Klasse</option>
+                <option>7. Klasse</option>
+                <option>8. Klasse</option>
               </select>
             </div>
 
             {/* Time Per Question */}
             <div>
               <label className="block text-sm font-bold text-slate-900 mb-2">
-                Час на питання: {contractForm.timePerQuestion}с
+                Zeit pro Frage: {contractForm.timePerQuestion}s
               </label>
               <input
                 type="range"
@@ -421,7 +421,7 @@ const BrainCoinApp = () => {
             {/* Points Per Correct */}
             <div>
               <label className="block text-sm font-bold text-slate-900 mb-2">
-                Балів за правильну відповідь: +{contractForm.pointsPerCorrect}
+                Punkte für richtige Antwort: +{contractForm.pointsPerCorrect}
               </label>
               <input
                 type="range"
@@ -436,7 +436,7 @@ const BrainCoinApp = () => {
             {/* Penalty */}
             <div>
               <label className="block text-sm font-bold text-slate-900 mb-2">
-                Штраф за помилку: -{contractForm.penalty}
+                Abzug für Fehler: -{contractForm.penalty}
               </label>
               <input
                 type="range"
@@ -450,16 +450,16 @@ const BrainCoinApp = () => {
 
             {/* Prize Section */}
             <div className="border-t border-slate-200 pt-6">
-              <h3 className="font-bold text-slate-900 mb-4">🏆 Приз</h3>
+              <h3 className="font-bold text-slate-900 mb-4">🏆 Preis</h3>
               <input
                 type="text"
-                placeholder="Назва призу (напр. PlayStation 5)"
+                placeholder="Preisname (z.B. PlayStation 5)"
                 value={contractForm.prizeName}
                 onChange={(e) => setContractForm({ ...contractForm, prizeName: e.target.value })}
                 className="w-full border border-slate-300 rounded-lg px-4 py-2 text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
               />
               <div>
-                <label className="block text-sm font-bold text-slate-900 mb-2">Вартість у монетах: {contractForm.prizeCoins}</label>
+                <label className="block text-sm font-bold text-slate-900 mb-2">Wert in Münzen: {contractForm.prizeCoins}</label>
                 <input
                   type="range"
                   min="50"
@@ -471,7 +471,7 @@ const BrainCoinApp = () => {
                 />
               </div>
               <div className="mt-4 border-2 border-dashed border-slate-300 rounded-lg p-8 text-center">
-                <p className="text-slate-500 text-sm">📸 Фото призу</p>
+                <p className="text-slate-500 text-sm">📸 Foto des Preises</p>
               </div>
             </div>
 
@@ -480,7 +480,7 @@ const BrainCoinApp = () => {
               onClick={() => setCurrentScreen('parentDashboard')}
               className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-4 rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
             >
-              ✓ Створити контракт
+              ✓ Vertrag erstellen
             </button>
           </div>
         </div>
@@ -498,11 +498,11 @@ const BrainCoinApp = () => {
         <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white sticky top-0 z-10 shadow-md">
           <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-black">Привіт, {selectedChild.name}!</h1>
-              <p className="text-blue-100 text-sm">Дозволь заробити монети!</p>
+              <h1 className="text-2xl font-black">Hallo, {selectedChild.name}!</h1>
+              <p className="text-blue-100 text-sm">Verdiene Münzen!</p>
             </div>
             <div className="text-center">
-              <p className="text-blue-100 text-xs">Баланс</p>
+              <p className="text-blue-100 text-xs">Guthaben</p>
               <p className="text-3xl font-black">🪙 {childCoins}</p>
             </div>
           </div>
@@ -514,13 +514,13 @@ const BrainCoinApp = () => {
             <div className="space-y-6">
               {/* Streak */}
               <div className="bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg p-4 shadow-md">
-                <p className="text-sm opacity-90">Поточна серія</p>
-                <p className="text-4xl font-black">🔥 7 днів</p>
+                <p className="text-sm opacity-90">Aktuelle Serie</p>
+                <p className="text-4xl font-black">🔥 7 Tage</p>
               </div>
 
               {/* Active Contracts */}
               <div>
-                <h2 className="text-lg font-bold text-slate-900 mb-4">Активні контракти</h2>
+                <h2 className="text-lg font-bold text-slate-900 mb-4">Aktive Verträge</h2>
                 <div className="space-y-4">
                   {mockContracts
                     .filter(c => c.childId === selectedChildId)
@@ -551,7 +551,7 @@ const BrainCoinApp = () => {
                           onClick={() => handleStartQuiz(contract.id)}
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-lg flex items-center justify-center gap-2 transition-all transform hover:scale-105 active:scale-95 text-sm"
                         >
-                          <Play className="w-4 h-4" /> Почати тест
+                          <Play className="w-4 h-4" /> Test starten
                         </button>
                       </div>
                     ))}
@@ -562,18 +562,18 @@ const BrainCoinApp = () => {
 
           {childTab === 'tests' && (
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Мої тести</h2>
-              <p className="text-slate-600">Історія тестів буде найскоро...</p>
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Meine Tests</h2>
+              <p className="text-slate-600">Testverlauf kommt bald...</p>
             </div>
           )}
 
           {childTab === 'wallet' && (
             <div className="space-y-6">
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Гаманець</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Geldbörse</h2>
 
               {/* Balance */}
               <div className="bg-gradient-to-br from-orange-400 to-orange-600 text-white rounded-lg p-8 text-center shadow-lg">
-                <p className="text-orange-100 text-sm mb-2">Поточний баланс</p>
+                <p className="text-orange-100 text-sm mb-2">Aktuelles Guthaben</p>
                 <p className="text-5xl font-black">🪙 {childCoins}</p>
               </div>
 
@@ -581,7 +581,7 @@ const BrainCoinApp = () => {
               <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
                 <h3 className="font-bold text-slate-900 mb-3">PlayStation 5 🎮</h3>
                 <div className="flex justify-between text-sm mb-2">
-                  <span className="text-slate-600">{childCoins} / 500 монет</span>
+                  <span className="text-slate-600">{childCoins} / 500 Münzen</span>
                   <span className="font-bold text-blue-600">{Math.round((childCoins / 500) * 100)}%</span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-4">
@@ -594,13 +594,13 @@ const BrainCoinApp = () => {
 
               {/* Transaction History */}
               <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm">
-                <h3 className="font-bold text-slate-900 mb-4">Історія операцій</h3>
+                <h3 className="font-bold text-slate-900 mb-4">Transaktionsverlauf</h3>
                 <div className="space-y-3">
                   {[
-                    { type: 'earn', amount: 5, label: 'Математика', time: '2ч назад' },
-                    { type: 'earn', amount: 3, label: 'Английский', time: '4ч назад' },
-                    { type: 'penalty', amount: 2, label: 'Штраф', time: '1д назад' },
-                    { type: 'earn', amount: 7, label: 'Математика', time: '2д назад' },
+                    { type: 'earn', amount: 5, label: 'Mathematik', time: 'vor 2 Std.' },
+                    { type: 'earn', amount: 3, label: 'Englisch', time: 'vor 4 Std.' },
+                    { type: 'penalty', amount: 2, label: 'Abzug', time: 'vor 1 Tag' },
+                    { type: 'earn', amount: 7, label: 'Mathematik', time: 'vor 2 Tagen' },
                   ].map((tx, i) => (
                     <div key={i} className="flex items-center justify-between text-sm">
                       <span className="text-slate-600">{tx.label}</span>
@@ -619,15 +619,15 @@ const BrainCoinApp = () => {
 
           {childTab === 'profile' && (
             <div>
-              <h2 className="text-lg font-bold text-slate-900 mb-4">Профіль</h2>
+              <h2 className="text-lg font-bold text-slate-900 mb-4">Profil</h2>
               <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm space-y-4">
                 <div>
-                  <p className="text-sm text-slate-600">Ім'я</p>
+                  <p className="text-sm text-slate-600">Name</p>
                   <p className="font-bold text-slate-900">{selectedChild.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-600">Вік</p>
-                  <p className="font-bold text-slate-900">{selectedChild.age} років</p>
+                  <p className="text-sm text-slate-600">Alter</p>
+                  <p className="font-bold text-slate-900">{selectedChild.age} Jahre</p>
                 </div>
                 <button
                   onClick={() => {
@@ -636,7 +636,7 @@ const BrainCoinApp = () => {
                   }}
                   className="w-full mt-6 flex items-center justify-center gap-2 text-red-600 hover:text-red-700 font-medium py-2 bg-red-50 rounded-lg transition-colors"
                 >
-                  <LogOut className="w-4 h-4" /> Вийти
+                  <LogOut className="w-4 h-4" /> Abmelden
                 </button>
               </div>
             </div>
@@ -647,10 +647,10 @@ const BrainCoinApp = () => {
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 max-w-2xl mx-auto">
           <div className="flex justify-around">
             {[
-              { tab: 'home', icon: Home, label: 'Головна' },
-              { tab: 'tests', icon: CheckCircle, label: 'Тести' },
-              { tab: 'wallet', icon: TrendingUp, label: 'Гаманець' },
-              { tab: 'profile', icon: User, label: 'Профіль' },
+              { tab: 'home', icon: Home, label: 'Startseite' },
+              { tab: 'tests', icon: CheckCircle, label: 'Tests' },
+              { tab: 'wallet', icon: TrendingUp, label: 'Geldbörse' },
+              { tab: 'profile', icon: User, label: 'Profil' },
             ].map(({ tab, icon: Icon, label }) => (
               <button
                 key={tab}
@@ -680,7 +680,7 @@ const BrainCoinApp = () => {
         {/* Header */}
         <div className="w-full max-w-md mb-8">
           <div className="text-white mb-4">
-            <p className="text-sm opacity-90">Питання {quizState.currentQuestion + 1} з {quizState.questions.length}</p>
+            <p className="text-sm opacity-90">Frage {quizState.currentQuestion + 1} von {quizState.questions.length}</p>
             <div className="w-full bg-blue-500 rounded-full h-2 mt-2">
               <div className="bg-green-400 h-2 rounded-full transition-all" style={{ width: `${progress}%` }}></div>
             </div>
@@ -705,7 +705,7 @@ const BrainCoinApp = () => {
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
                   <p className="text-3xl font-black text-white">{quizState.timeRemaining}</p>
-                  <p className="text-xs text-blue-100">сек</p>
+                  <p className="text-xs text-blue-100">Sek</p>
                 </div>
               </div>
             </div>
@@ -747,13 +747,13 @@ const BrainCoinApp = () => {
             <div className={`text-center mb-4 p-4 rounded-lg ${quizState.isCorrect ? 'bg-green-500' : 'bg-red-500'} text-white`}>
               {quizState.isCorrect ? (
                 <div>
-                  <p className="text-2xl font-black">✓ Правильно!</p>
-                  <p className="text-sm opacity-90">+{5} монет</p>
+                  <p className="text-2xl font-black">✓ Richtig!</p>
+                  <p className="text-sm opacity-90">+{5} Münzen</p>
                 </div>
               ) : (
                 <div>
-                  <p className="text-2xl font-black">✗ Неправильно</p>
-                  <p className="text-sm opacity-90">Правильна відповідь: {question.answers[question.correct]}</p>
+                  <p className="text-2xl font-black">✗ Falsch</p>
+                  <p className="text-sm opacity-90">Richtige Antwort: {question.answers[question.correct]}</p>
                 </div>
               )}
             </div>
@@ -762,7 +762,7 @@ const BrainCoinApp = () => {
               onClick={handleNextQuestion}
               className="w-full bg-white text-blue-600 font-bold py-4 px-4 rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
             >
-              {quizState.currentQuestion < quizState.questions.length - 1 ? 'Наступне питання →' : 'Завершити тест →'}
+              {quizState.currentQuestion < quizState.questions.length - 1 ? 'Nächste Frage →' : 'Test beenden →'}
             </button>
           </div>
         )}
@@ -800,7 +800,7 @@ const BrainCoinApp = () => {
         <div className="w-full max-w-md z-10">
           {/* Score */}
           <div className="text-center mb-8">
-            <p className="text-white text-lg opacity-90 mb-2">Твій результат</p>
+            <p className="text-white text-lg opacity-90 mb-2">Dein Ergebnis</p>
             <div className="text-7xl font-black text-white mb-4">{percentage}%</div>
 
             {/* Stars */}
@@ -816,15 +816,15 @@ const BrainCoinApp = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-3 gap-3 mb-8">
             <div className="bg-white bg-opacity-20 backdrop-blur text-white rounded-lg p-4 text-center">
-              <p className="text-sm opacity-90">Правильно</p>
+              <p className="text-sm opacity-90">Richtig</p>
               <p className="text-3xl font-black">{quizResults.correct}</p>
             </div>
             <div className="bg-white bg-opacity-20 backdrop-blur text-white rounded-lg p-4 text-center">
-              <p className="text-sm opacity-90">Всього</p>
+              <p className="text-sm opacity-90">Gesamt</p>
               <p className="text-3xl font-black">{quizResults.total}</p>
             </div>
             <div className="bg-white bg-opacity-20 backdrop-blur text-white rounded-lg p-4 text-center">
-              <p className="text-sm opacity-90">Монет</p>
+              <p className="text-sm opacity-90">Münzen</p>
               <p className="text-3xl font-black text-orange-300">+{quizResults.score}</p>
             </div>
           </div>
@@ -835,13 +835,13 @@ const BrainCoinApp = () => {
               onClick={() => handleStartNewQuiz()}
               className="w-full bg-white text-green-600 font-bold py-4 px-4 rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
             >
-              На головну →
+              Zur Startseite →
             </button>
             <button
               onClick={() => handleStartQuiz(1)}
               className="w-full bg-green-800 hover:bg-green-900 text-white font-bold py-4 px-4 rounded-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
             >
-              Повторити тест
+              Test wiederholen
             </button>
           </div>
         </div>
