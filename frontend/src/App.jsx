@@ -25,6 +25,10 @@ import ChatScreen      from './screens/child/ChatScreen';
 import ChallengeScreen from './screens/child/ChallengeScreen';
 import MistakeReview   from './screens/child/MistakeReview';
 
+import Impressum    from './screens/legal/Impressum';
+import Datenschutz  from './screens/legal/Datenschutz';
+import AGB          from './screens/legal/AGB';
+
 function Guard({ children, role }) {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
@@ -48,6 +52,11 @@ export default function App() {
           <Route path="/login"   element={<LoginScreen />} />
           <Route path="/register" element={<RegisterScreen />} />
           <Route path="/invite/:code" element={<InviteAccept />} />
+
+          {/* Legal pages — public, no auth required */}
+          <Route path="/impressum"    element={<Impressum />} />
+          <Route path="/datenschutz"  element={<Datenschutz />} />
+          <Route path="/agb"          element={<AGB />} />
 
           {/* Parent */}
           <Route path="/parent" element={<Guard role="parent"><ParentLayout /></Guard>}>
