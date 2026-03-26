@@ -3,13 +3,13 @@ import {
   View, Text, FlatList, StyleSheet,
   TouchableOpacity, ActivityIndicator, RefreshControl, Alert, Platform,
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 
 export default function FriendsScreen() {
-  const { t } = useTranslation();
   const { user } = useAuth();
+  const navigation = useNavigation();
 
   const [friends,    setFriends]    = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -112,7 +112,16 @@ export default function FriendsScreen() {
               </View>
             )}
             {item._section === 'accepted' && (
-              <Text style={styles.friendBadge}>👾</Text>
+              <TouchableOpacity
+                style={styles.chatBtn}
+                onPress={() => navigation.navigate('Chat', {
+                  friendId:     item.friend_id,
+                  friendName:   item.friend_name,
+                  friendAvatar: item.friend_avatar,
+                })}
+              >
+                <Text style={styles.chatBtnText}>💬</Text>
+              </TouchableOpacity>
             )}
           </View>
         )}
@@ -150,5 +159,7 @@ const styles = StyleSheet.create({
   acceptTxt:     { fontSize: 16, color: '#065f46', fontWeight: '700' },
   rejectBtn:     { backgroundColor: '#fee2e2', borderRadius: 8, padding: 8, minWidth: 36, alignItems: 'center' },
   rejectTxt:     { fontSize: 16, color: '#991b1b', fontWeight: '700' },
+  chatBtn:       { backgroundColor: '#ede9fe', borderRadius: 10, padding: 9, minWidth: 38, alignItems: 'center' },
+  chatBtnText:   { fontSize: 18 },
   friendBadge:   { fontSize: 22 },
 });

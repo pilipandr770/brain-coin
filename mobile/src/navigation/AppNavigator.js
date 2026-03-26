@@ -23,6 +23,7 @@ import Leaderboard      from '../screens/child/Leaderboard';
 import ConnectParent    from '../screens/child/ConnectParent';
 import ProfileScreen    from '../screens/child/ProfileScreen';
 import FriendsScreen    from '../screens/child/FriendsScreen';
+import ChatScreen       from '../screens/child/ChatScreen';
 import MistakeReview    from '../screens/child/MistakeReview';
 
 import ContentSettings   from '../screens/parent/ContentSettings';
@@ -122,6 +123,8 @@ export default function AppNavigator() {
               options={{ headerShown: true, title: 'Quiz' }} />
             <Stack.Screen name="MistakeReview" component={MistakeReview}
               options={{ headerShown: false }} />
+            <Stack.Screen name="Chat"          component={ChatScreen}
+              options={{ headerShown: true, title: 'Chat' }} />
             <Stack.Screen name="ConnectParent" component={ConnectParent}
               options={{ headerShown: true, title: 'Elternteil verbinden' }} />
           </>
