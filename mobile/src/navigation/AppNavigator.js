@@ -10,6 +10,10 @@ import { useAuth } from '../context/AuthContext';
 import LoadingScreen    from '../screens/LoadingScreen';
 import LoginScreen      from '../screens/LoginScreen';
 import RegisterScreen   from '../screens/RegisterScreen';
+import WelcomeScreen    from '../screens/WelcomeScreen';
+import Impressum        from '../screens/legal/Impressum';
+import Datenschutz      from '../screens/legal/Datenschutz';
+import AGB              from '../screens/legal/AGB';
 
 import ParentDashboard  from '../screens/parent/ParentDashboard';
 import CreateChild      from '../screens/parent/CreateChild';
@@ -103,8 +107,12 @@ export default function AppNavigator() {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!user ? (
           <>
-            <Stack.Screen name="Login"    component={LoginScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
+            <Stack.Screen name="Welcome"     component={WelcomeScreen} />
+            <Stack.Screen name="Login"       component={LoginScreen} />
+            <Stack.Screen name="Register"    component={RegisterScreen} />
+            <Stack.Screen name="Impressum"   component={Impressum} />
+            <Stack.Screen name="Datenschutz" component={Datenschutz} />
+            <Stack.Screen name="AGB"         component={AGB} />
           </>
         ) : user.role === 'parent' || user.role === 'admin' ? (
           <>

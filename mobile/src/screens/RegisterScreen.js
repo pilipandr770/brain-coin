@@ -2,7 +2,7 @@
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, KeyboardAvoidingView, Platform,
-  ActivityIndicator, Alert, ScrollView,
+  ActivityIndicator, Alert, ScrollView, Linking,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import api from '../api';
@@ -165,6 +165,20 @@ export default function RegisterScreen({ navigation }) {
             {t('auth.haveAccount')} <Text style={styles.linkBold}>{t('auth.login')}</Text>
           </Text>
         </TouchableOpacity>
+
+        <View style={styles.legalRow}>
+          <TouchableOpacity onPress={() => navigation.navigate('Impressum')}>
+            <Text style={styles.legalLink}>Impressum</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalDot}>·</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Datenschutz')}>
+            <Text style={styles.legalLink}>Datenschutz</Text>
+          </TouchableOpacity>
+          <Text style={styles.legalDot}>·</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('AGB')}>
+            <Text style={styles.legalLink}>AGB</Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -207,4 +221,7 @@ const styles = StyleSheet.create({
   link:       { marginTop: 16, alignItems: 'center' },
   linkText:   { fontSize: 14, color: '#64748b' },
   linkBold:   { color: '#1d4ed8', fontWeight: '700' },
+  legalRow:   { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 24, paddingBottom: 8 },
+  legalLink:  { color: '#94a3b8', fontSize: 12 },
+  legalDot:   { color: '#cbd5e1', fontSize: 12 },
 });
