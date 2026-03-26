@@ -31,7 +31,7 @@ router.get('/users', auth, adminOnly, async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT id, name, email, role,
-              subscription_status, subscription_end,
+              sub_status, sub_current_period_end,
               created_at
        FROM users
        ORDER BY created_at DESC`
@@ -51,10 +51,10 @@ router.get('/stats', auth, adminOnly, async (req, res) => {
          COUNT(*)                                                    AS total_users,
          COUNT(*) FILTER (WHERE role = 'parent')                    AS total_parents,
          COUNT(*) FILTER (WHERE role = 'child')                     AS total_children,
-         COUNT(*) FILTER (WHERE subscription_status = 'active')     AS active_subscriptions,
-         COUNT(*) FILTER (WHERE subscription_status = 'trial')      AS trialing_subscriptions,
-         COUNT(*) FILTER (WHERE subscription_status = 'past_due')   AS past_due_subscriptions,
-         COUNT(*) FILTER (WHERE subscription_status = 'canceled')   AS canceled_count
+         COUNT(*) FILTER (WHERE sub_status = 'active')     AS active_subscriptions,
+         COUNT(*) FILTER (WHERE sub_status = 'trialing')   AS trialing_subscriptions,
+         COUNT(*) FILTER (WHERE sub_status = 'past_due')   AS past_due_subscriptions,
+         COUNT(*) FILTER (WHERE sub_status = 'canceled')   AS canceled_count
        FROM users`
     );
     const stats = rows[0];
@@ -67,23 +67,23 @@ router.get('/stats', auth, adminOnly, async (req, res) => {
 });
 
 // ─── Manual subscription override ─────────────────────────────────────────
-// Body: { subscription_status: 'active' | 'trial' | 'canceled' | 'none' }
+// Body: { sub_status: 'active' | 'trialing' | 'canceled' | 'none' }
 router.patch('/users/:id/subscription', auth, adminOnly, async (req, res) => {
   const { id } = req.params;
-  const { subscription_status } = req.body;
+  const { sub_status } = req.body;
 
-  const allowed = ['none', 'trial', 'active', 'past_due', 'canceled'];
-  if (!allowed.includes(subscription_status)) {
-    return res.status(400).json({ error: `subscription_status must be one of: ${allowed.join(', ')}` });
+  const allowed = ['none', 'trialing', 'active', 'past_due', 'canceled'];
+  if (!allowed.includes(sub_status)) {
+    return res.status(400).json({ error: `sub_status must be one of: ${allowed.join(', ')}` });
   }
 
   try {
     const { rowCount } = await pool.query(
-      'UPDATE users SET subscription_status = $1 WHERE id = $2',
-      [subscription_status, id]
+      'UPDATE users SET sub_status = $1 WHERE id = $2',
+      [sub_status, id]
     );
     if (rowCount === 0) return res.status(404).json({ error: 'User not found' });
-    res.json({ success: true, subscription_status });
+    res.json({ success: true, sub_status });
   } catch (err) {
     console.error('Admin toggle subscription error:', err);
     res.status(500).json({ error: 'Failed to update subscription' });

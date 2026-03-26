@@ -7,7 +7,7 @@ const auth = require('../middleware/auth');
 
 const sign = (user) =>
   jwt.sign(
-    { id: user.id, role: user.role, name: user.name, subscription_status: user.subscription_status || 'trial' },
+    { id: user.id, role: user.role, name: user.name, sub_status: user.sub_status || 'none' },
     process.env.JWT_SECRET,
     { expiresIn: '30d' }
   );
@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
       `INSERT INTO users (name, email, password_hash, role, age, grade, ui_language)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, name, email, role, age, grade, ui_language, total_coins, avatar_emoji,
-                 content_settings, subscription_status, subscription_end`,
+                 content_settings, sub_status, sub_current_period_end`,
       [name.trim(), email.toLowerCase(), hash, role, age || null, grade || null, lang]
     );
     const user = rows[0];
@@ -72,8 +72,8 @@ router.get('/me', auth, async (req, res) => {
   try {
     const { rows } = await pool.query(
       `SELECT id, name, email, role, age, grade, ui_language, content_settings, total_coins,
-              avatar_emoji, subscription_status, subscription_end, created_at
-       FROM users WHERE id = $1`,  
+              avatar_emoji, sub_status, sub_current_period_end, created_at
+       FROM users WHERE id = $1`,
       [req.user.id]
     );
     if (!rows[0]) return res.status(404).json({ error: 'User not found' });
