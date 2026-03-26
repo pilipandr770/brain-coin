@@ -7,9 +7,8 @@ if (!process.env.DATABASE_URL) {
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Ensure schema isolation on shared Render PostgreSQL.
-  // search_path may also be set via ?options=-csearch_path%3Dbraincoin in the URL.
   options: '-c search_path=braincoin',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
 pool.on('error', (err) => console.error('PostgreSQL pool error:', err));
