@@ -20,6 +20,12 @@ router.post('/checkout', auth, async (req, res) => {
     return res.status(403).json({ error: 'Parents only' });
   }
 
+  const priceId = process.env.STRIPE_PRICE_ID;
+  if (!priceId || !priceId.startsWith('price_')) {
+    console.error('STRIPE_PRICE_ID is not configured correctly. Expected price_xxx, got:', priceId);
+    return res.status(500).json({ error: 'Stripe-Preis nicht konfiguriert. Bitte kontaktiere den Support.' });
+  }
+
   try {
     const { rows } = await pool.query(
       'SELECT email, stripe_customer_id FROM users WHERE id = $1',
@@ -46,7 +52,7 @@ router.post('/checkout', auth, async (req, res) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: process.env.STRIPE_PRICE_ID,       // price_xxx from Stripe dashboard
+          price: priceId,       // price_xxx from Stripe dashboard
           quantity: 1,
         },
       ],
