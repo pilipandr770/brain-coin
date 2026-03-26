@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -7,7 +6,6 @@ const MEDALS = ['🥇', '🥈', '🥉'];
 
 export default function Leaderboard() {
   const { user }              = useAuth();
-  const { t }                 = useTranslation();
   const [board,    setBoard]  = useState([]);
   const [loading,  setLoading] = useState(true);
   const [friends,  setFriends] = useState(new Set());
@@ -49,9 +47,9 @@ export default function Leaderboard() {
     <div className="flex flex-col h-full bg-slate-900">
       {/* Header */}
       <div className="bg-gradient-to-r from-amber-500 to-yellow-400 px-4 pt-10 pb-6 text-center">
-        <h1 className="text-2xl font-black text-white">🏆 {t('leaderboard.title')}</h1>
+        <h1 className="text-2xl font-black text-white">🏆 {'Rangliste'}</h1>
         {myRank > 0 && (
-          <p className="text-amber-100 text-sm mt-1">{t('leaderboard.myRank')}: <span className="font-bold text-white">#{myRank}</span></p>
+          <p className="text-amber-100 text-sm mt-1">{'Dein Rang'}: <span className="font-bold text-white">#{myRank}</span></p>
         )}
       </div>
 
@@ -95,7 +93,7 @@ export default function Leaderboard() {
         ) : board.length === 0 ? (
           <div className="text-center text-slate-400 py-12">
             <div className="text-4xl mb-2">🌱</div>
-            <p> {t('leaderboard.noPlayers')}</p>
+            <p> {'Noch keine Spieler'}</p>
           </div>
         ) : (
           board.slice(3).map((row, i) => {
@@ -115,24 +113,24 @@ export default function Leaderboard() {
                     {row.name} {isMe && '(ти)'}
                   </p>
                   <p>
-                {row.completed_contracts || 0} {t('leaderboard.quests')} &nbsp;
-                {row.total_correct || 0} {t('results.correct').toLowerCase()}
+                {row.completed_contracts || 0} {'Aufgaben'} &nbsp;
+                {row.total_correct || 0} {'Richtig'.toLowerCase()}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="font-black text-amber-400 text-sm">🪙 {row.total_coins}</p>
                   {!isMe && (
                     isFriend ? (
-                      <span className="text-xs text-green-400">{t('leaderboard.friend')}</span>
+                      <span className="text-xs text-green-400">{'Freund ✓'}</span>
                     ) : isPend ? (
-                      <span className="text-xs text-slate-400">{t('leaderboard.sent')}</span>
+                      <span className="text-xs text-slate-400">{'Gesendet…'}</span>
                     ) : (
                       <button
                         disabled={sending === row.id}
                         onClick={() => sendRequest(row.id)}
                         className="text-xs text-indigo-400 font-semibold active:scale-95 transition disabled:opacity-50"
                       >
-                        {t('leaderboard.sendRequest')}
+                        {'+ Freund'}
                       </button>
                     )
                   )}

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -40,7 +39,7 @@ function FriendCard({ item, onAccept, onReject, onChat }) {
           </>
         )}
         {item.status === 'pending' && item.requester_id === undefined && (
-          <span className="text-xs text-slate-400">{t('leaderboard.sent')}…</span>
+          <span className="text-xs text-slate-400">{'Gesendet…'}…</span>
         )}
       </div>
     </div>
@@ -50,7 +49,6 @@ function FriendCard({ item, onAccept, onReject, onChat }) {
 export default function FriendsScreen() {
   const { user } = useAuth();
   const nav      = useNavigate();
-  const { t }    = useTranslation();
   const [all,     setAll]     = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab,     setTab]     = useState('friends'); // friends | pending
@@ -81,10 +79,10 @@ export default function FriendsScreen() {
     <div className="flex flex-col h-full bg-slate-900">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 pt-10 pb-5">
-        <h1 className="text-xl font-black text-white">👥 {t('friends.title')}</h1>
+        <h1 className="text-xl font-black text-white">👥 {'Freunde'}</h1>
         {incoming.length > 0 && (
           <div className="mt-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full inline-block">
-            {incoming.length} {t('friends.newRequest')}
+            {incoming.length} {'neue Anfrage'}
           </div>
         )}
       </div>
@@ -98,8 +96,8 @@ export default function FriendsScreen() {
             className={`flex-1 py-3 text-sm font-bold transition ${tab === tabKey ? 'text-indigo-400 border-b-2 border-indigo-400' : 'text-slate-400'}`}
           >
             {tabKey === 'friends'
-              ? `${t('friends.friends')} (${accepted.length})`
-              : `${t('friends.requests')} (${incoming.length + outgoing.length})`}
+              ? `${'Freunde'} (${accepted.length})`
+              : `${'Anfragen'} (${incoming.length + outgoing.length})`}
           </button>
         ))}
       </div>
@@ -111,8 +109,8 @@ export default function FriendsScreen() {
           accepted.length === 0 ? (
             <div className="text-center text-slate-400 py-12">
               <div className="text-4xl mb-2">😊</div>
-            <p className="text-sm">{t('friends.noFriends')}</p>
-              <p className="text-xs mt-1">{t('friends.findInRating')}</p>
+            <p className="text-sm">{'Noch keine Freunde.'}</p>
+              <p className="text-xs mt-1">{'Finde sie in der Rangliste!'}</p>
             </div>
           ) : (
             accepted.map(f => (
@@ -128,7 +126,7 @@ export default function FriendsScreen() {
           <>
             {incoming.length > 0 && (
               <>
-                <p className="text-xs text-slate-500 font-bold uppercase">{t('friends.incoming')}</p>
+                <p className="text-xs text-slate-500 font-bold uppercase">{'Eingehende Anfragen'}</p>
                 {incoming.map(f => (
                   <FriendCard
                     key={f.id} item={f}
@@ -141,7 +139,7 @@ export default function FriendsScreen() {
             )}
             {outgoing.length > 0 && (
               <>
-                <p className="text-xs text-slate-500 font-bold uppercase mt-4">{t('friends.outgoing')}</p>
+                <p className="text-xs text-slate-500 font-bold uppercase mt-4">{'Gesendete Anfragen'}</p>
                 {outgoing.map(f => (
                   <FriendCard
                     key={f.id} item={f}
@@ -155,7 +153,7 @@ export default function FriendsScreen() {
             {incoming.length === 0 && outgoing.length === 0 && (
               <div className="text-center text-slate-400 py-12">
                 <div className="text-4xl mb-2">📭</div>
-                <p className="text-sm">{t('friends.noRequests')}</p>
+                <p className="text-sm">{'Keine Freundschaftsanfragen'}</p>
               </div>
             )}
           </>

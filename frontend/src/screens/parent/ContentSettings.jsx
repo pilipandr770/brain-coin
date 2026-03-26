@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, Shield } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import api from '../../api';
 
 const DEFAULT_SETTINGS = {
@@ -12,7 +11,6 @@ const DEFAULT_SETTINGS = {
 };
 
 export default function ContentSettings({ childId, childName, onBack }) {
-  const { t } = useTranslation();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,18 +37,18 @@ export default function ContentSettings({ childId, childName, onBack }) {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
-      setError(err.response?.data?.error || t('common.error'));
+      setError(err.response?.data?.error || 'Fehler');
     } finally {
       setSaving(false);
     }
   };
 
   const filters = [
-    { key: 'safe_mode',        icon: '🛡️', label: t('content.safeMode'),       desc: t('content.safeModeDesc') },
-    { key: 'block_religion',   icon: '⛪', label: t('content.blockReligion'),   desc: t('content.blockReligionDesc') },
-    { key: 'block_politics',   icon: '🏛️', label: t('content.blockPolitics'),   desc: t('content.blockPoliticsDesc') },
-    { key: 'block_conflicts',  icon: '⚔️', label: t('content.blockConflicts'),  desc: t('content.blockConflictsDesc') },
-    { key: 'block_mature',     icon: '🔞', label: t('content.blockMature'),     desc: t('content.blockMatureDesc') },
+    { key: 'safe_mode',        icon: '🛡️', label: 'Sicherer Modus',       desc: 'Nur sachliche MINT-Fragen (Mathematik, Wissenschaft, Technologie)' },
+    { key: 'block_religion',   icon: '⛪', label: 'Religion & Spiritualität blockieren',   desc: 'Keine Fragen über Religionen, Glauben oder Gottheiten' },
+    { key: 'block_politics',   icon: '🏛️', label: 'Politik blockieren',   desc: 'Keine Fragen über politische Parteien oder Ideologien' },
+    { key: 'block_conflicts',  icon: '⚔️', label: 'Kriegsdetails blockieren',  desc: 'Kriege werden erwähnt, aber keine Gewaltdetails oder Opferzahlen' },
+    { key: 'block_mature',     icon: '🔞', label: 'Inhalte für Erwachsene blockieren',     desc: 'Keine biologisch expliziten Fragen, Sucht oder Trauma' },
   ];
 
   return (
@@ -62,14 +60,14 @@ export default function ContentSettings({ childId, childName, onBack }) {
         </button>
         <div className="flex items-center gap-2">
           <Shield className="w-5 h-5 text-blue-600" />
-          <h1 className="font-black text-slate-900">{t('content.title')}</h1>
+          <h1 className="font-black text-slate-900">{'Inhaltsfilter'}</h1>
         </div>
       </div>
 
       <div className="max-w-lg mx-auto p-4 space-y-4">
         {/* Child info */}
         <div className="bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3 text-sm text-blue-700">
-          {t('content.settingsFor')}: <span className="font-bold">{childName}</span>
+          {'Einstellungen für'}: <span className="font-bold">{childName}</span>
         </div>
 
         {error && (
@@ -97,7 +95,7 @@ export default function ContentSettings({ childId, childName, onBack }) {
                         <p className="font-bold text-slate-900">{label}</p>
                         <p className="text-slate-500 text-sm mt-0.5">{desc}</p>
                         {key === 'safe_mode' && settings.safe_mode && (
-                          <p className="text-blue-600 text-xs mt-1 font-medium">✅ {t('content.safeModeActive')}</p>
+                          <p className="text-blue-600 text-xs mt-1 font-medium">✅ {'Alle anderen Filter überschrieben'}</p>
                         )}
                       </div>
                     </div>
@@ -124,7 +122,7 @@ export default function ContentSettings({ childId, childName, onBack }) {
                 saved ? 'bg-green-600' : 'bg-blue-600 hover:bg-blue-500'
               } disabled:opacity-50`}
             >
-              {saving ? '⏳' : saved ? '✅ ' + t('common.saved') : t('common.save')}
+              {saving ? '⏳' : saved ? '✅ ' + 'Gespeichert' : 'Speichern'}
             </button>
           </>
         )}

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, XCircle, Zap, BookOpen, Clock } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import api from '../../api';
 
 function StatCard({ icon, label, value, color }) {
@@ -19,7 +18,6 @@ function StatCard({ icon, label, value, color }) {
 }
 
 function SubjectRow({ subject, lang }) {
-  const { t } = useTranslation();
   const name = lang === 'de' ? subject.name_de : lang === 'en' ? subject.name_en : subject.subject_name;
   const total = subject.correct + subject.wrong;
   const pct = total > 0 ? Math.round((subject.correct / total) * 100) : 0;
@@ -37,14 +35,14 @@ function SubjectRow({ subject, lang }) {
           {' · '}
           <span className="text-red-500 font-bold">{subject.wrong}✗</span>
           {subject.mastered > 0 && (
-            <span className="text-blue-500 ml-1">· {subject.mastered} {t('stats.masteredShort')}</span>
+            <span className="text-blue-500 ml-1">· {subject.mastered} {'gemeistert'}</span>
           )}
         </div>
       </div>
       <div className="w-full bg-slate-100 rounded-full h-2">
         <div className={`${barColor} h-2 rounded-full transition-all`} style={{ width: `${pct}%` }} />
       </div>
-      <p className="text-xs text-slate-400 mt-1 text-right">{pct}% {t('stats.correctShort')}</p>
+      <p className="text-xs text-slate-400 mt-1 text-right">{pct}% {'richtig'}</p>
     </div>
   );
 }
@@ -52,7 +50,6 @@ function SubjectRow({ subject, lang }) {
 export default function ParentStats() {
   const { childId } = useParams();
   const nav         = useNavigate();
-  const { t, i18n } = useTranslation();
 
   const [stats,   setStats]   = useState(null);
   const [child,   setChild]   = useState(null);
@@ -69,14 +66,14 @@ export default function ParentStats() {
         const found = childrenRes.data.find(c => String(c.id) === String(childId));
         setChild(found || null);
       })
-      .catch(err => setError(err?.response?.data?.error || t('common.error')))
+      .catch(err => setError(err?.response?.data?.error || 'Fehler'))
       .finally(() => setLoading(false));
   }, [childId]);
 
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 gap-3">
       <div className="text-4xl animate-spin">⏳</div>
-      <p className="text-slate-500">{t('stats.loading')}</p>
+      <p className="text-slate-500">{'Statistik wird geladen…'}</p>
     </div>
   );
 
@@ -85,12 +82,12 @@ export default function ParentStats() {
       <div className="text-4xl">😢</div>
       <p className="text-slate-600 text-center">{error}</p>
       <button onClick={() => nav('/parent')} className="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl">
-        {t('common.back')}
+        {'Zurück'}
       </button>
     </div>
   );
 
-  const lang = i18n.language;
+  const lang = 'de-DE';
   const hasData = stats.total_sessions > 0;
 
   return (
@@ -105,7 +102,7 @@ export default function ParentStats() {
             <span className="text-2xl">{child?.avatar_emoji || '🎮'}</span>
             <div>
               <h1 className="font-black text-base leading-tight">{child?.name || '...'}</h1>
-              <p className="text-blue-200 text-xs">{t('stats.title')}</p>
+              <p className="text-blue-200 text-xs">{'Statistik des Kindes'}</p>
             </div>
           </div>
         </div>
@@ -115,7 +112,7 @@ export default function ParentStats() {
         {!hasData ? (
           <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-100">
             <div className="text-5xl mb-3">📊</div>
-            <p className="text-slate-600">{t('stats.noData')}</p>
+            <p className="text-slate-600">{'Noch keine Daten. Das Kind hat noch keine Tests absolviert.'}</p>
           </div>
         ) : (
           <>
@@ -123,25 +120,25 @@ export default function ParentStats() {
             <div className="grid grid-cols-2 gap-3">
               <StatCard
                 icon={<Clock className="w-5 h-5 text-blue-600" />}
-                label={t('stats.sessions')}
+                label={'Abgeschlossene Sitzungen'}
                 value={stats.total_sessions}
                 color="bg-blue-100"
               />
               <StatCard
                 icon={<CheckCircle className="w-5 h-5 text-green-600" />}
-                label={t('stats.correct')}
+                label={'Richtige Antworten'}
                 value={stats.total_correct}
                 color="bg-green-100"
               />
               <StatCard
                 icon={<XCircle className="w-5 h-5 text-red-500" />}
-                label={t('stats.wrong')}
+                label={'Fehler'}
                 value={stats.total_wrong}
                 color="bg-red-100"
               />
               <StatCard
                 icon={<Zap className="w-5 h-5 text-amber-500" />}
-                label={t('stats.mastered')}
+                label={'Gemeisterte Fragen'}
                 value={stats.mastered_questions}
                 color="bg-amber-100"
               />
@@ -155,7 +152,7 @@ export default function ParentStats() {
               return (
                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
                   <div className="flex justify-between items-center mb-2">
-                    <p className="font-bold text-slate-700 text-sm">{t('stats.correctShort')} %</p>
+                    <p className="font-bold text-slate-700 text-sm">{'richtig'} %</p>
                     <p className="font-black text-2xl text-slate-900">{pct}%</p>
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden">
@@ -169,7 +166,7 @@ export default function ParentStats() {
             {stats.bySubject?.length > 0 && (
               <section>
                 <h2 className="font-black text-slate-800 text-base mb-3 flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-blue-600" /> {t('stats.bySubject')}
+                  <BookOpen className="w-5 h-5 text-blue-600" /> {'Nach Fach'}
                 </h2>
                 <div className="space-y-2">
                   {stats.bySubject.map(s => (
@@ -183,7 +180,7 @@ export default function ParentStats() {
             {stats.weakTopics?.length > 0 && (
               <section>
                 <h2 className="font-black text-slate-800 text-base mb-3 flex items-center gap-2">
-                  <XCircle className="w-5 h-5 text-red-500" /> {t('stats.weakTopics')}
+                  <XCircle className="w-5 h-5 text-red-500" /> {'Schwachstellen'}
                 </h2>
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                   {stats.weakTopics.map((q, i) => (
@@ -206,7 +203,7 @@ export default function ParentStats() {
             {stats.recentSessions?.length > 0 && (
               <section>
                 <h2 className="font-black text-slate-800 text-base mb-3 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-slate-500" /> {t('stats.recentSessions')}
+                  <Clock className="w-5 h-5 text-slate-500" /> {'Letzte Sitzungen'}
                 </h2>
                 <div className="space-y-2">
                   {stats.recentSessions.map(s => {

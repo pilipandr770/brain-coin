@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -9,7 +8,6 @@ export default function ChatScreen() {
   const { state }           = useLocation();
   const nav                 = useNavigate();
   const { user }            = useAuth();
-  const { t }               = useTranslation();
   const [messages, setMessages] = useState([]);
   const [text,     setText]     = useState('');
   const [loading,  setLoading]  = useState(true);
@@ -56,7 +54,7 @@ export default function ChatScreen() {
     }
   };
 
-  const friendName   = friend?.friend_name   || `${t('child.player')} #${friendId}`;
+  const friendName   = friend?.friend_name   || `${'Spieler'} #${friendId}`;
   const friendAvatar = friend?.friend_avatar || '😊';
 
   return (
@@ -72,7 +70,7 @@ export default function ChatScreen() {
         <span className="text-2xl">{friendAvatar}</span>
         <div>
           <p className="font-bold text-white text-sm">{friendName}</p>
-          <p className="text-xs text-green-400">{t('chat.online')}</p>
+          <p className="text-xs text-green-400">{'Online'}</p>
         </div>
       </div>
 
@@ -83,7 +81,7 @@ export default function ChatScreen() {
         ) : messages.length === 0 ? (
           <div className="text-center text-slate-400 py-12">
             <div className="text-4xl mb-2">{friendAvatar}</div>
-            <p className="text-sm">{t('chat.startChat')} {friendName}!</p>
+            <p className="text-sm">{'Starte das Gespräch!'} {friendName}!</p>
           </div>
         ) : (
           messages.map((msg) => {
@@ -118,7 +116,7 @@ export default function ChatScreen() {
         <input
           value={text}
           onChange={e => setText(e.target.value)}
-          placeholder={t('chat.placeholder')}
+          placeholder={'Nachricht…'}
           maxLength={1000}
           className="flex-1 bg-slate-700 text-white placeholder-slate-400 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
         />

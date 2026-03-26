@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTranslation } from 'react-i18next';
 import api from '../api';
 
 export default function LoginScreen() {
   const nav = useNavigate();
   const { login } = useAuth();
-  const { t } = useTranslation();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,7 +21,7 @@ export default function LoginScreen() {
       login(data.token, data.user);
       nav(data.user.role === 'parent' ? '/parent' : '/child', { replace: true });
     } catch (err) {
-      setError(err.response?.data?.error || t('common.error'));
+      setError(err.response?.data?.error || 'Fehler');
     } finally {
       setLoading(false);
     }
@@ -35,7 +33,7 @@ export default function LoginScreen() {
         <div className="text-center mb-8">
           <div className="text-5xl mb-2">🧠💰</div>
           <h1 className="text-3xl font-black text-blue-400">BrainCoin</h1>
-          <p className="text-slate-400 text-sm mt-1">{t('auth.loginTitle')}</p>
+          <p className="text-slate-400 text-sm mt-1">{'Anmelden'}</p>
         </div>
 
         <form onSubmit={submit} className="bg-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
@@ -46,7 +44,7 @@ export default function LoginScreen() {
           )}
 
           <div>
-            <label className="block text-slate-400 text-sm mb-1">{t('auth.email')}</label>
+            <label className="block text-slate-400 text-sm mb-1">{'E-Mail'}</label>
             <input
               type="email"
               value={form.email}
@@ -58,7 +56,7 @@ export default function LoginScreen() {
           </div>
 
           <div>
-            <label className="block text-slate-400 text-sm mb-1">{t('auth.password')}</label>
+            <label className="block text-slate-400 text-sm mb-1">{'Passwort'}</label>
             <input
               type="password"
               value={form.password}
@@ -74,14 +72,14 @@ export default function LoginScreen() {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 active:scale-95 font-bold py-3 rounded-xl transition-all text-white"
           >
-            {loading ? '⏳' : t('auth.login') + ' →'}
+            {loading ? '⏳' : 'Anmelden' + ' →'}
           </button>
         </form>
 
         <p className="text-center text-slate-500 mt-6 text-sm">
-          {t('auth.noAccount')}{' '}
+          {'Noch kein Konto?'}{' '}
           <Link to="/register" className="text-blue-400 hover:text-blue-300 font-semibold">
-            {t('auth.register')}
+            {'Registrieren'}
           </Link>
         </p>
       </div>

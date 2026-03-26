@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, AlertCircle, Dumbbell } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 
 function SubjectGroup({ subjectEmoji, subjectName, questions, onPractice, starting }) {
-  const { t } = useTranslation();
   const ids = questions.map(q => q.id);
   return (
     <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden mb-4">
@@ -22,7 +20,7 @@ function SubjectGroup({ subjectEmoji, subjectName, questions, onPractice, starti
           className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all active:scale-95"
         >
           <Dumbbell className="w-3.5 h-3.5" />
-          {t('mistakes.practice')} ({Math.min(ids.length, 10)})
+          {'Üben'} ({Math.min(ids.length, 10)})
         </button>
       </div>
 
@@ -52,7 +50,6 @@ function SubjectGroup({ subjectEmoji, subjectName, questions, onPractice, starti
 export default function MistakeReview() {
   const nav        = useNavigate();
   const { user }   = useAuth();
-  const { t, i18n } = useTranslation();
 
   const [mistakes,  setMistakes]  = useState([]);
   const [loading,   setLoading]   = useState(true);
@@ -78,7 +75,7 @@ export default function MistakeReview() {
         },
       });
     } catch (err) {
-      alert(err?.response?.data?.error || t('common.error'));
+      alert(err?.response?.data?.error || 'Fehler');
       setStarting(false);
     }
   };
@@ -87,7 +84,7 @@ export default function MistakeReview() {
   const grouped = mistakes.reduce((acc, q) => {
     const key = q.subject_id;
     if (!acc[key]) {
-      const lang = i18n.language;
+      const lang = 'de-DE';
       const name = lang === 'de' ? q.name_de : lang === 'en' ? q.name_en : q.subject_name;
       acc[key] = { subjectName: name || q.subject_name, subjectEmoji: q.subject_emoji, questions: [] };
     }
@@ -106,8 +103,8 @@ export default function MistakeReview() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="font-black text-lg leading-tight">🔴 {t('mistakes.title')}</h1>
-            <p className="text-orange-200 text-xs">{t('mistakes.subtitle')}</p>
+            <h1 className="font-black text-lg leading-tight">🔴 {'Fehleranalyse'}</h1>
+            <p className="text-orange-200 text-xs">{'Fragen, bei denen du Fehler gemacht hast'}</p>
           </div>
         </div>
       </div>
@@ -116,18 +113,18 @@ export default function MistakeReview() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <div className="text-4xl animate-spin">⏳</div>
-            <p className="text-slate-400">{t('mistakes.loading')}</p>
+            <p className="text-slate-400">{'Fehler werden geladen…'}</p>
           </div>
         ) : mistakes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <div className="text-6xl">🎉</div>
-            <p className="text-white font-bold text-xl text-center">{t('mistakes.noMistakes')}</p>
-            <p className="text-slate-400 text-sm text-center">{t('mistakes.wellDone')}</p>
+            <p className="text-white font-bold text-xl text-center">{'Keine Fehler! Weiter so! 🎉'}</p>
+            <p className="text-slate-400 text-sm text-center">{'Sehr gut! Mach weiter so!'}</p>
             <button
               onClick={() => nav('/child')}
               className="mt-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all active:scale-95"
             >
-              🏠 {t('common.back')}
+              🏠 {'Zurück'}
             </button>
           </div>
         ) : (
@@ -139,9 +136,9 @@ export default function MistakeReview() {
               className="w-full mb-6 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 disabled:opacity-50 text-white font-black py-3.5 rounded-2xl shadow-lg transition-all active:scale-95 text-sm"
             >
               {starting ? (
-                <><span className="animate-spin text-lg">⏳</span> {t('quiz.loading')}</>
+                <><span className="animate-spin text-lg">⏳</span> {'Laden…'}</>
               ) : (
-                <><Dumbbell className="w-4 h-4" /> {t('mistakes.practiceAll')} ({Math.min(mistakes.length, 10)})</>
+                <><Dumbbell className="w-4 h-4" /> {'Alle Fehler üben'} ({Math.min(mistakes.length, 10)})</>
               )}
             </button>
 

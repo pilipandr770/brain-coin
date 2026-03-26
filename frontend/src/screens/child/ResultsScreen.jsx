@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -39,12 +38,13 @@ function Star({ active, delay = 0 }) {
   );
 }
 
+const GRADES = { '5': 'Klasse 5', '6': 'Klasse 6', '7': 'Klasse 7', '8': 'Klasse 8', '9': 'Klasse 9' };
+
 export default function ResultsScreen() {
   const { sessionId } = useParams();
   const { state }     = useLocation();
   const nav           = useNavigate();
   const { refreshUser } = useAuth();
-  const { t }         = useTranslation();
 
   const [session,  setSession]  = useState(state?.session  || null);
   const [contract, setContract] = useState(state?.contract || null);
@@ -94,38 +94,38 @@ export default function ResultsScreen() {
         </div>
 
         <h1 className="text-2xl font-black text-slate-900 mb-1">
-          {pct >= 90 ? t('results.excellent') : pct >= 70 ? t('results.great') : t('results.good')}
+          {pct >= 90 ? 'Ausgezeichnet! 🥇' : pct >= 70 ? 'Sehr gut! 🎉' : 'Nicht schlecht! 💪'}
         </h1>
         <p className="text-slate-500 text-sm mb-6">
-          {contract ? `${contract.subject_name} · ${t('grades.' + contract.grade)}` : t('quiz.finish').replace(' 🏁', '')}
+          {contract ? `${contract.subject_name} · ${(GRADES[contract.grade] || contract.grade)}` : 'Quiz beenden 🏁'.replace(' 🏁', '')}
         </p>
 
         {/* Big score */}
         <div className="text-6xl font-black mb-1" style={{ color: great ? '#6366f1' : '#94a3b8' }}>
           {pct}%
         </div>
-        <p className="text-slate-500 text-sm mb-6">{correct} / {total} {t('results.correct').toLowerCase()}</p>
+        <p className="text-slate-500 text-sm mb-6">{correct} / {total} {'Richtig'.toLowerCase()}</p>
 
         {/* Stats row */}
         <div className="flex justify-around bg-slate-50 rounded-2xl p-4 mb-6">
           <div>
             <div className="text-2xl font-black text-green-600">{correct}</div>
-            <div className="text-xs text-slate-500">{t('results.correct')}</div>
+            <div className="text-xs text-slate-500">{'Richtig'}</div>
           </div>
           <div>
             <div className="text-2xl font-black text-red-500">{total - correct}</div>
-            <div className="text-xs text-slate-500">{t('results.mistakes')}</div>
+            <div className="text-xs text-slate-500">{'Fehler'}</div>
           </div>
           <div>
             <div className="text-2xl font-black text-amber-500">+{coins}</div>
-            <div className="text-xs text-slate-500">{t('results.coins')}</div>
+            <div className="text-xs text-slate-500">{'Münzen'}</div>
           </div>
         </div>
 
         {/* Contract progress */}
         {contract && (
           <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-6 text-left">
-            <p className="text-xs font-bold text-amber-700 mb-1">🏆 {t('results.quest')}: {contract.prize_name}</p>
+            <p className="text-xs font-bold text-amber-700 mb-1">🏆 {'Aufgabe'}: {contract.prize_name}</p>
             <div className="w-full bg-amber-100 rounded-full h-2.5">
               <div
                 className="bg-amber-500 h-2.5 rounded-full transition-all"
@@ -143,14 +143,14 @@ export default function ResultsScreen() {
           onClick={() => nav('/child')}
           className="w-full bg-indigo-600 text-white font-black py-3.5 rounded-xl mb-3 active:scale-95 transition"
         >
-          {t('results.home')}
+          {'Startseite 🏠'}
         </button>
         {contract && (
           <button
             onClick={() => nav(`/child/contract/${contract.id}`)}
             className="w-full bg-slate-100 text-slate-700 font-semibold py-3 rounded-xl active:scale-95 transition text-sm"
           >
-            {t('results.toQuest')}
+            {'Zur Aufgabe →'}
           </button>
         )}
       </div>

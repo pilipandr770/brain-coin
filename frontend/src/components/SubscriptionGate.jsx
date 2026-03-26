@@ -5,11 +5,9 @@
  */
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useTranslation } from 'react-i18next';
 
 export default function SubscriptionGate({ children }) {
   const { user } = useAuth();
-  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Children and admins bypass the gate
@@ -30,33 +28,33 @@ export default function SubscriptionGate({ children }) {
       <div className="bg-white rounded-2xl shadow-lg max-w-md w-full p-8 text-center">
         <div className="text-5xl mb-4">🔒</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">
-          {t('subscription.required_title', 'Premium Feature')}
+          {'Premium-Funktion'}
         </h2>
         <p className="text-gray-500 mb-6">
-          {t('subscription.required_desc', 'This feature requires an active BrainCoin subscription.')}
+          {'Diese Funktion erfordert ein aktives BrainCoin-Abonnement.'}
         </p>
 
         <div className="bg-purple-50 rounded-xl p-4 mb-6 text-left">
           <p className="font-semibold text-purple-800 mb-2">
-            {t('subscription.plan_name', 'BrainCoin Parent Plan')}
+            {'BrainCoin Elternplan'}
           </p>
           <ul className="text-sm text-purple-700 space-y-1">
-            <li>✅ {t('subscription.feature1', 'Unlimited contracts for children')}</li>
-            <li>✅ {t('subscription.feature2', 'AI-powered quiz generation')}</li>
-            <li>✅ {t('subscription.feature3', 'Progress statistics & reports')}</li>
-            <li>✅ {t('subscription.feature4', 'Up to 5 child profiles')}</li>
+            <li>✅ {'Unbegrenzte Verträge für Kinder'}</li>
+            <li>✅ {'KI-gestützte Quizgenerierung'}</li>
+            <li>✅ {'Fortschrittsstatistiken & Berichte'}</li>
+            <li>✅ {'Bis zu 5 Kinderprofile'}</li>
           </ul>
           <p className="text-purple-900 font-bold mt-3 text-lg">
-            €5 / {t('subscription.per_month', 'month')}
+            €5 / {'Monat'}
             <span className="text-sm font-normal ml-2 text-purple-600">
-              — {t('subscription.trial_cta', '3 days free')}
+              — {'3 Tage kostenlos'}
             </span>
           </p>
         </div>
 
         {status === 'past_due' && (
           <p className="text-amber-600 text-sm mb-4">
-            ⚠️ {t('subscription.past_due_notice', 'Your last payment failed. Please update your payment method.')}
+            ⚠️ {'Ihre letzte Zahlung ist fehlgeschlagen. Bitte aktualisieren Sie Ihre Zahlungsmethode.'}
           </p>
         )}
 
@@ -64,7 +62,7 @@ export default function SubscriptionGate({ children }) {
           onClick={() => navigate('/parent/payment')}
           className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition-colors"
         >
-          {t('subscription.cta_button', 'Subscribe — 3 days free')}
+          {'Abonnieren — 3 Tage kostenlos'}
         </button>
       </div>
     </div>

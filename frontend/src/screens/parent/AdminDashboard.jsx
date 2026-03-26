@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
 export default function AdminDashboard() {
-  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -62,13 +60,13 @@ export default function AdminDashboard() {
     <div className="max-w-5xl mx-auto p-4 pt-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
-          {t('admin.title', 'Admin Dashboard')}
+          {'Admin-Dashboard'}
         </h1>
         <button
           onClick={() => { logout(); navigate('/'); }}
           className="text-sm text-gray-500 hover:text-gray-800"
         >
-          {t('nav.logout', 'Logout')}
+          {'Logout'}
         </button>
       </div>
 
@@ -76,24 +74,24 @@ export default function AdminDashboard() {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
           <StatCard
-            label={t('admin.stats_total_users', 'Total users')}
+            label={'Benutzer gesamt'}
             value={stats.total_users}
             icon="👥"
           />
           <StatCard
-            label={t('admin.stats_active_subs', 'Active subs')}
+            label={'Aktive Abos'}
             value={stats.active_subscriptions}
             icon="✅"
             color="text-green-600"
           />
           <StatCard
-            label={t('admin.stats_trialing', 'Trialing')}
+            label={'Testphase'}
             value={stats.trialing_subscriptions}
             icon="🎁"
             color="text-blue-600"
           />
           <StatCard
-            label={t('admin.stats_mrr', 'Est. MRR')}
+            label={'Gesch. MRR'}
             value={`€${stats.estimated_mrr_eur}`}
             icon="💰"
             color="text-purple-600"
@@ -105,11 +103,11 @@ export default function AdminDashboard() {
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-100 flex gap-3 items-center">
           <h2 className="font-semibold text-gray-800 flex-1">
-            {t('admin.user_table_title', 'Users')}
+            {'Benutzer'}
           </h2>
           <input
             type="text"
-            placeholder={t('admin.search_placeholder', 'Search by name or email…')}
+            placeholder={'Nach Name oder E-Mail suchen…'}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm w-60 focus:outline-none focus:ring-2 focus:ring-purple-200"
@@ -118,7 +116,7 @@ export default function AdminDashboard() {
 
         {loading ? (
           <div className="p-8 text-center text-gray-400">
-            {t('common.loading', 'Loading…')}
+            {'Laden…'}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -193,7 +191,7 @@ export default function AdminDashboard() {
             </table>
             {filtered.length === 0 && (
               <div className="p-6 text-center text-gray-400 text-sm">
-                {t('admin.no_users', 'No users found')}
+                {'Keine Benutzer gefunden'}
               </div>
             )}
           </div>

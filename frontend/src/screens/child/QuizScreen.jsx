@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import api from '../../api';
 
 export default function QuizScreen() {
   const { sessionId } = useParams();
   const { state }     = useLocation();
   const nav           = useNavigate();
-  const { t }         = useTranslation();
 
   const [questions,    setQuestions]    = useState(state?.questions || []);
   const [contract,     setContract]     = useState(state?.contract  || null);
@@ -103,7 +101,7 @@ export default function QuizScreen() {
     <div className="min-h-screen bg-blue-700 flex items-center justify-center">
       <div className="text-center text-white">
         <div className="text-6xl animate-spin mb-4">⏳</div>
-        <p className="text-xl font-bold">{completing ? t('quiz.counting') : t('quiz.loading')}</p>
+        <p className="text-xl font-bold">{completing ? 'Ergebnisse werden berechnet…' : 'Laden…'}</p>
       </div>
     </div>
   );
@@ -119,7 +117,7 @@ export default function QuizScreen() {
       {/* Header */}
       <div className="w-full max-w-md mb-4">
         <div className="flex justify-between items-center text-white text-sm mb-2">
-          <span>{t('quiz.question')} {current + 1} / {questions.length}</span>
+          <span>{'Frage'} {current + 1} / {questions.length}</span>
           <span className="font-bold text-amber-300">🪙 {totalScore}</span>
         </div>
         <div className="w-full bg-blue-600 rounded-full h-2">
@@ -142,7 +140,7 @@ export default function QuizScreen() {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className={`text-3xl font-black ${timeColor}`}>{timeLeft}</span>
-          <span className="text-blue-200 text-xs">{t('quiz.sec')}</span>
+          <span className="text-blue-200 text-xs">{'Sek'}</span>
         </div>
       </div>
 
@@ -179,14 +177,14 @@ export default function QuizScreen() {
         <div className={`w-full max-w-md rounded-2xl p-4 text-center mb-4 ${isCorrect ? 'bg-green-600' : 'bg-red-600'} text-white`}>
           {isCorrect ? (
             <>
-              <p className="text-2xl font-black">✅ {t('quiz.correct')}</p>
+              <p className="text-2xl font-black">✅ {'Richtig!'}</p>
               <p className="text-green-200 text-sm">+{pointsDelta} 🪙</p>
             </>
           ) : (
             <>
-              <p className="text-2xl font-black">❌ {selected === -1 ? t('quiz.timeout') : t('quiz.wrong')}</p>
+              <p className="text-2xl font-black">❌ {selected === -1 ? 'Zeit abgelaufen!' : 'Falsch'}</p>
               {correctIdx !== null && (
-                <p className="text-red-200 text-sm mt-1">{t('quiz.correctAnswer')}: <span className="font-bold text-white">{q.answers[correctIdx]}</span></p>
+                <p className="text-red-200 text-sm mt-1">{'Richtige Antwort'}: <span className="font-bold text-white">{q.answers[correctIdx]}</span></p>
               )}
               {pointsDelta < 0 && <p className="text-red-200 text-xs mt-0.5">{pointsDelta} 🪙</p>}
             </>
@@ -199,7 +197,7 @@ export default function QuizScreen() {
           onClick={goNext}
           className="w-full max-w-md bg-white text-blue-700 font-black py-4 rounded-2xl active:scale-95 transition-all shadow-lg text-lg"
         >
-          {current < questions.length - 1 ? t('quiz.next') : t('quiz.finish')}
+          {current < questions.length - 1 ? 'Weiter →' : 'Quiz beenden 🏁'}
         </button>
       )}
     </div>

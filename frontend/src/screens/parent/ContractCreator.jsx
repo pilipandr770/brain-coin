@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import api from '../../api';
 
-const GRADES = ['5','6','7','8','9'];
+const GRADE_LIST = ['5','6','7','8','9'];
+const GRADES = { '5': 'Klasse 5', '6': 'Klasse 6', '7': 'Klasse 7', '8': 'Klasse 8', '9': 'Klasse 9' };
+
 const PRIZE_EMOJIS = ['🏆','🎮','📱','🎧','🎨','🚀','⚽','🎸','📚','🍕'];
 
 export default function ContractCreator() {
   const nav = useNavigate();
-  const { t } = useTranslation();
   const [step, setStep]       = useState(1);
   const [subjects, setSubjects] = useState([]);
   const [children, setChildren] = useState([]);
@@ -49,7 +49,7 @@ export default function ContractCreator() {
 
   const submit = async () => {
     if (!form.child_id || !form.subject_id || !form.title || !form.prize_name) {
-      setError(t('common.fillRequired'));
+      setError('Bitte alle Pflichtfelder ausfüllen');
       return;
     }
     setLoading(true);
@@ -58,7 +58,7 @@ export default function ContractCreator() {
       await api.post('/contracts', { ...form, prize_coins: parseInt(form.prize_coins), target_coins: parseInt(form.prize_coins) });
       nav('/parent');
     } catch (err) {
-      setError(err.response?.data?.error || t('common.error'));
+      setError(err.response?.data?.error || 'Fehler');
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,7 @@ export default function ContractCreator() {
           <ChevronLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <h1 className="font-black text-slate-900">{t('contract.newContract')}</h1>
+          <h1 className="font-black text-slate-900">{'Neuer Vertrag'}</h1>
           <div className="flex gap-1 mt-1">
             {[1,2,3].map(i => (
               <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= step ? 'bg-blue-600' : 'bg-slate-200'}`} />
@@ -92,15 +92,15 @@ export default function ContractCreator() {
           <>
             <div className="text-center py-2">
               <div className="text-4xl mb-1">📋</div>
-              <h2 className="text-xl font-black text-slate-900">{t('contract.step1Title')}</h2>
+              <h2 className="text-xl font-black text-slate-900">{'Schritt 1: Was & für wen?'}</h2>
             </div>
 
             {/* Child selector */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">👦 {t('contract.child')}</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">👦 {'Kind'}</label>
               {children.length === 0 ? (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
-                  <p className="text-yellow-700 text-sm">{t('contract.addChildFirst')}</p>
+                  <p className="text-yellow-700 text-sm">{'Füge zuerst ein Kind im Bereich «Meine Kinder» hinzu'}</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
@@ -121,7 +121,7 @@ export default function ContractCreator() {
 
             {/* Subject */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">📚 {t('contract.subject')}</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">📚 {'Fach'}</label>
               <div className="grid grid-cols-2 gap-2">
                 {subjects.map(s => (
                   <button
@@ -131,7 +131,7 @@ export default function ContractCreator() {
                     className={`p-3 rounded-xl border-2 transition-all text-left ${parseInt(form.subject_id) === s.id ? 'border-purple-500 bg-purple-50' : 'border-slate-200 bg-white'}`}
                   >
                     <div className="text-2xl">{s.emoji}</div>
-                    <div className="font-bold text-slate-900 text-sm mt-1">{t('subjects.' + s.slug, { defaultValue: s.name })}</div>
+                    <div className="font-bold text-slate-900 text-sm mt-1">{s.name}</div>
                   </button>
                 ))}
               </div>
@@ -139,16 +139,16 @@ export default function ContractCreator() {
 
             {/* Grade */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">🎓 {t('contract.grade')}</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">🎓 {'Klasse'}</label>
               <div className="flex gap-2 flex-wrap">
-                {GRADES.map(g => (
+                {GRADE_LIST.map(g => (
                   <button
                     key={g}
                     type="button"
                     onClick={() => set('grade')(g)}
                     className={`px-4 py-2 rounded-xl font-bold transition-all border-2 text-sm ${form.grade === g ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'}`}
                   >
-                    {t('grades.' + g)}
+                    {GRADE_LIST[g]}
                   </button>
                 ))}
               </div>
@@ -159,7 +159,7 @@ export default function ContractCreator() {
               disabled={!form.child_id || !form.subject_id}
               className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-all active:scale-95"
             >
-              {t('common.next')} →
+              {'Weiter'} →
             </button>
           </>
         )}
@@ -169,37 +169,37 @@ export default function ContractCreator() {
           <>
             <div className="text-center py-2">
               <div className="text-4xl mb-1">🗺️</div>
-              <h2 className="text-xl font-black text-slate-900">{t('contract.step2Title')}</h2>
+              <h2 className="text-xl font-black text-slate-900">{'Schritt 2: Quest-Details'}</h2>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">📌 {t('contract.contractTitle')}</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">📌 {'Vertragsname'}</label>
               <input
                 value={form.title}
                 onChange={set('title')}
-                placeholder={t('contract.titlePlaceholder')}
+                placeholder={'z. B. "Mathematik April"'}
                 className="w-full bg-white border-2 border-slate-200 focus:border-blue-500 rounded-xl px-4 py-3 text-slate-900 outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">📝 {t('contract.description')}</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">📝 {'Beschreibung (optional)'}</label>
               <textarea
                 value={form.description}
                 onChange={set('description')}
                 rows={2}
-                placeholder={t('contract.descriptionPlaceholder')}
+                placeholder={'Was soll getan werden...'}
                 className="w-full bg-white border-2 border-slate-200 focus:border-blue-500 rounded-xl px-4 py-3 text-slate-900 outline-none transition-all resize-none"
               />
             </div>
 
             {/* Rules sliders */}
             <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-4">
-              <h3 className="font-bold text-slate-800">⚙️ {t('contract.rules')}</h3>
+              <h3 className="font-bold text-slate-800">⚙️ {'Spielregeln'}</h3>
 
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-600">⏱️ {t('contract.timePerQuestion')}</span>
+                  <span className="text-slate-600">⏱️ {'Zeit pro Frage'}</span>
                   <span className="font-bold text-blue-600">{form.time_per_question}с</span>
                 </div>
                 <input type="range" min="10" max="60" value={form.time_per_question}
@@ -209,7 +209,7 @@ export default function ContractCreator() {
 
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-600">✅ {t('contract.coinsPerCorrect')}</span>
+                  <span className="text-slate-600">✅ {'Münzen pro richtiger Antwort'}</span>
                   <span className="font-bold text-green-600">+{form.points_per_correct}🪙</span>
                 </div>
                 <input type="range" min="1" max="10" value={form.points_per_correct}
@@ -219,7 +219,7 @@ export default function ContractCreator() {
 
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-slate-600">❌ {t('contract.penaltyPerWrong')}</span>
+                  <span className="text-slate-600">❌ {'Abzug pro Fehler'}</span>
                   <span className="font-bold text-red-500">-{form.penalty_per_wrong}🪙</span>
                 </div>
                 <input type="range" min="0" max="5" value={form.penalty_per_wrong}
@@ -229,10 +229,10 @@ export default function ContractCreator() {
             </div>
 
             <button
-              onClick={() => { if (!form.title) { setError(t('contract.enterTitle')); return; } setError(''); setStep(3); }}
+              onClick={() => { if (!form.title) { setError('Gib den Vertragsname ein'); return; } setError(''); setStep(3); }}
               className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all active:scale-95"
             >
-              {t('common.next')} →
+              {'Weiter'} →
             </button>
           </>
         )}
@@ -242,22 +242,22 @@ export default function ContractCreator() {
           <>
             <div className="text-center py-2">
               <div className="text-4xl mb-1">🏆</div>
-              <h2 className="text-xl font-black text-slate-900">{t('contract.step3Title')}</h2>
-              <p className="text-slate-500 text-sm">{t('contract.step3Desc')}</p>
+              <h2 className="text-xl font-black text-slate-900">{'Schritt 3: Belohnung!'}</h2>
+              <p className="text-slate-500 text-sm">{'Wähle eine Belohnung für das Kind'}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">{t('contract.prizeName')}</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">{'Preisname'}</label>
               <input
                 value={form.prize_name}
                 onChange={set('prize_name')}
-                placeholder={t('contract.prizeNamePlaceholder')}
+                placeholder={'z. B. "Kinobesuch"'}
                 className="w-full bg-white border-2 border-slate-200 focus:border-blue-500 rounded-xl px-4 py-3 text-slate-900 outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">{t('contract.prizeIcon')}</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">{'Preis-Symbol'}</label>
               <div className="flex flex-wrap gap-2">
                 {PRIZE_EMOJIS.map(em => (
                   <button key={em} type="button" onClick={() => set('prize_emoji')(em)}
@@ -270,7 +270,7 @@ export default function ContractCreator() {
 
             <div>
               <div className="flex justify-between text-sm mb-2">
-                <label className="font-bold text-slate-700">🪙 {t('contract.coinsNeeded')}</label>
+                <label className="font-bold text-slate-700">🪙 {'Benotigte Munzen'}</label>
                 <span className="font-black text-amber-500 text-lg">{form.prize_coins}</span>
               </div>
               <input type="range" min="50" max="1000" step="10" value={form.prize_coins}
@@ -284,12 +284,12 @@ export default function ContractCreator() {
 
             {/* Preview */}
             <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4">
-              <h4 className="font-bold text-amber-800 mb-3 text-sm">📋 {t('contract.preview')}</h4>
+              <h4 className="font-bold text-amber-800 mb-3 text-sm">📋 {'Vorschau'}</h4>
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-3xl">{selectedChild?.avatar_emoji}</span>
                 <div>
                   <p className="font-bold text-slate-800">{selectedChild?.name}</p>
-                  <p className="text-xs text-slate-500">{t('subjects.' + selectedSubject?.slug, { defaultValue: selectedSubject?.name })} · {t('grades.' + form.grade)}</p>
+                  <p className="text-xs text-slate-500">{(selectedSubject?.name ?? '')} · {(GRADE_LIST[form.grade] || form.grade)}</p>
                 </div>
               </div>
               <p className="text-slate-700 font-semibold text-sm">{form.title || '...'}</p>
@@ -305,7 +305,7 @@ export default function ContractCreator() {
               disabled={loading || !form.prize_name}
               className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-40 text-white font-bold py-4 rounded-xl transition-all active:scale-95 text-lg"
             >
-              {loading ? '⏳' : '✍️ ' + t('contract.signContract')}
+              {loading ? '⏳' : '✍️ ' + 'Vertrag unterschreiben'}
             </button>
           </>
         )}

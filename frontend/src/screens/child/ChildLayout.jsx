@@ -1,12 +1,10 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { Home, Trophy, Users, AlertCircle, LogOut } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ChildLayout() {
   const { user, logout } = useAuth();
   const nav = useNavigate();
-  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col">
@@ -16,12 +14,12 @@ export default function ChildLayout() {
           <span className="text-2xl">{user?.avatar_emoji || '🎮'}</span>
           <div>
             <p className="font-black text-sm leading-none">{user?.name}</p>
-            <p className="text-blue-200 text-xs">{t('child.player')}</p>
+            <p className="text-blue-200 text-xs">{'Spieler'}</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-blue-200 text-xs">{t('common.coins')}</p>
+            <p className="text-blue-200 text-xs">{'Münzen'}</p>
             <p className="font-black text-amber-300 text-lg leading-none">🪙 {user?.total_coins ?? 0}</p>
           </div>
           <button onClick={() => { logout(); nav('/'); }} className="p-1.5 hover:bg-blue-600 rounded-xl transition-colors">
@@ -39,10 +37,10 @@ export default function ChildLayout() {
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-800 border-t border-slate-700 z-20">
         <div className="max-w-2xl mx-auto flex justify-around">
           {[
-            { to: '/child',              icon: Home,         label: t('nav.home'),         end: true },
-            { to: '/child/leaderboard',  icon: Trophy,       label: t('nav.leaderboard') },
-            { to: '/child/friends',      icon: Users,        label: t('nav.friends') },
-            { to: '/child/mistakes',     icon: AlertCircle,  label: t('mistakes.title') },
+            { to: '/child',              icon: Home,         label: 'Start',         end: true },
+            { to: '/child/leaderboard',  icon: Trophy,       label: 'Rangliste' },
+            { to: '/child/friends',      icon: Users,        label: 'Freunde' },
+            { to: '/child/mistakes',     icon: AlertCircle,  label: 'Fehleranalyse' },
           ].map(({ to, icon: Icon, label, end }) => (
             <NavLink
               key={to}

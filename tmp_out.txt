@@ -1,0 +1,2122 @@
+=== splash ===
+import { useNavigate } from 'react-router-dom';
+
+const LANGS = [
+  { code: 'de', flag: '🇩🇪', label: 'Deutsch' },
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'uk', flag: '🇺🇦', label: 'Українська' },
+];
+
+export default function SplashScreen() {
+  const nav = useNavigate();
+
+  const switchLang = (code) => {
+    i18n.changeLanguage(code);
+    localStorage.setItem('bc_lang', code);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex flex-col items-center justify-center p-6">
+      <div className="text-center max-w-sm w-full">
+        {/* Language picker */}
+        <div className="flex justify-center gap-2 mb-8">
+          {LANGS.map(l => (
+            <button
+              key={l.code}
+              onClick={() => switchLang(l.code)}
+              className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
+                i18n.language === l.code
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+              }`}
+            >
+              {l.flag} {l.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="text-8xl mb-4 animate-float">🧠</div>
+        <h1 className="text-5xl font-black text-blue-400 tracking-tight mb-1">{'BrainCoin'}</h1>
+        <p className="text-slate-400 mb-12 text-lg">{'Lernen · Verdienen · Gewinnen!'}</p>
+
+        <div className="space-y-4">
+          <button
+            onClick={() => nav('/login')}
+            className="w-full bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-blue-900/50 text-lg"
+          >
+            {'Anmelden'}
+          </button>
+          <button
+            onClick={() => nav('/register')}
+            className="w-full bg-slate-700 hover:bg-slate-600 active:scale-95 text-white font-bold py-4 rounded-2xl transition-all text-lg"
+          >
+            {'Registrieren'}
+          </button>
+        </div>
+
+        <p className="text-slate-600 mt-10 text-xs">BrainCoin v2.0 · 2026</p>
+      </div>
+    </div>
+  );
+}
+
+=== register ===
+import { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import api from '../api';
+
+const AVATARS = ['😊','🦁','🐯','🦊','🐸','🦄','🐉','🦅','🐺','🦋','🎮','🏆'];
+
+export default function RegisterScreen() {
+  const nav = useNavigate();
+  const { login } = useAuth();
+
+  const GRADES = ['5','6','7','8','9'];
+
+  const [step, setStep]   = useState(1);
+  const [role, setRole]   = useState(null);
+  const [avatar, setAvatar] = useState('😊');
+  const [form, setForm]   = useState({ name: '', email: '', password: '', grade: '6' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const changeLanguage = (code) => {
+    i18n.changeLanguage(code);
+    localStorage.setItem('bc_lang', code);
+  };
+
+  const chooseRole = (r) => {
+    setRole(r);
+    setStep(2);
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const payload = {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role,
+        ui_language: i18n.language || 'de',
+        ...(role === 'child' ? { grade: form.grade } : {}),
+      };
+      const { data } = await api.post('/auth/register', payload);
+      // Set avatar
+      if (avatar !== '😊') {
+        await api.patch('/auth/me/avatar', { avatar_emoji: avatar }, {
+          headers: { Authorization: `Bearer ${data.token}` },
+        });
+        data.user.avatar_emoji = avatar;
+      }
+      login(data.token, data.user);
+      nav(role === 'parent' ? '/parent' : '/child', { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.error || 'Fehler');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (step === 1) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm text-center">
+          <div className="flex justify-center gap-2 mb-4">
+            {[['de','🇩🇪'],['en','🇬🇧'],['uk','🇺🇦']].map(([code, flag]) => (
+              <button key={code} onClick={() => changeLanguage(code)}
+                className={`text-2xl rounded-xl p-2 transition-all ${
+                  i18n.language === code ? 'bg-blue-600 scale-110' : 'bg-slate-700 hover:bg-slate-600'
+                }`}>{flag}</button>
+            ))}
+          </div>
+          <div className="text-5xl mb-4">👋</div>
+          <h2 className="text-2xl font-black text-white mb-2">{'Wer bist du?'}</h2>
+          <p className="text-slate-400 mb-10 text-sm">{'Wähle deine Rolle'}</p>
+
+          <div className="space-y-4">
+            <button
+              onClick={() => chooseRole('parent')}
+              className="w-full bg-blue-700 hover:bg-blue-600 active:scale-95 rounded-2xl p-6 text-left transition-all border-2 border-blue-600 hover:border-blue-400"
+            >
+              <div className="text-4xl mb-2">👨‍👩‍👧</div>
+              <div className="text-xl font-bold text-white">{'Ich bin ein Elternteil'}</div>
+              <div className="text-blue-300 text-sm mt-1">{'Aufgaben erstellen, Fortschritt verfolgen'}</div>
+            </button>
+
+            <button
+              onClick={() => chooseRole('child')}
+              className="w-full bg-green-700 hover:bg-green-600 active:scale-95 rounded-2xl p-6 text-left transition-all border-2 border-green-600 hover:border-green-400"
+            >
+              <div className="text-4xl mb-2">🎒</div>
+              <div className="text-xl font-bold text-white">{'Ich bin ein Kind'}</div>
+              <div className="text-green-300 text-sm mt-1">{'Tests machen, Münzen verdienen!'}</div>
+            </button>
+          </div>
+
+          <p className="text-center text-slate-500 mt-8 text-sm">
+            {'Bereits registriert?'}{' '}
+            <Link to="/login" className="text-blue-400 hover:text-blue-300 font-semibold">{'Anmelden'}</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-blue-950 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        <button onClick={() => setStep(1)} className="text-slate-400 hover:text-white mb-6 flex items-center gap-2">
+          ← {'Zurück'}
+        </button>
+
+        <div className="text-center mb-6">
+          <div className="text-4xl mb-1">{role === 'parent' ? '👨‍👩‍👧' : '🏂'}</div>
+          <h2 className="text-2xl font-black text-white">
+            {role === 'parent' ? 'Eltern-Profil' : 'Spieler-Profil'}
+          </h2>
+        </div>
+
+        <form onSubmit={submit} className="bg-slate-800 rounded-2xl p-6 space-y-4 shadow-xl">
+          {error && (
+            <div className="bg-red-900/40 border border-red-700 text-red-300 rounded-xl px-4 py-3 text-sm">{error}</div>
+          )}
+
+          {/* Avatar picker */}
+          <div>
+            <label className="block text-slate-400 text-sm mb-2">{'Avatar wählen'}</label>
+            <div className="grid grid-cols-6 gap-2">
+              {AVATARS.map((em) => (
+                <button
+                  key={em}
+                  type="button"
+                  onClick={() => setAvatar(em)}
+                  className={`text-2xl p-2 rounded-xl transition-all ${avatar === em ? 'bg-blue-600 scale-110' : 'bg-slate-700 hover:bg-slate-600'}`}
+                >
+                  {em}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-slate-400 text-sm mb-1">{'Name'}</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={set('name')}
+              required
+              className="w-full bg-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={role === 'parent' ? 'Ihr Name' : 'Spitzname'}
+            />
+          </div>
+
+          {role === 'child' && (
+            <div>
+              <label className="block text-slate-400 text-sm mb-1">{'Schulklasse'}</label>
+              <div className="flex gap-2 flex-wrap">
+                {GRADES.map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, grade: g }))}
+                    className={`px-4 py-2 rounded-xl font-bold border-2 text-sm transition-all ${
+                      form.grade === g ? 'border-blue-500 bg-blue-600 text-white' : 'border-slate-600 bg-slate-700 text-slate-300'
+                    }`}
+                  >
+                    {t('grades.' + g)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-slate-400 text-sm mb-1">{'E-Mail'}</label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={set('email')}
+              required
+              className="w-full bg-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="your@email.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-slate-400 text-sm mb-1">{'Passwort'}</label>
+            <input
+              type="password"
+              value={form.password}
+              onChange={set('password')}
+              required
+              minLength={6}
+              className="w-full bg-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={'mind. 6 Zeichen'}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 active:scale-95 font-bold py-3 rounded-xl transition-all text-white mt-2"
+          >
+            {loading ? '⏳' : 'Registrieren' + ' 🚀'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+=== contractview ===
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../api';
+
+function Confetti() {
+  const items = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    left: Math.random() * 100,
+    delay: Math.random() * 1.5,
+    emoji: ['🎉','⭐','🪙','✨','🎊','💫'][Math.floor(Math.random() * 6)],
+    duration: 2 + Math.random() * 1.5,
+  }));
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+      {items.map(({ id, left, delay, emoji, duration }) => (
+        <div key={id} className="absolute text-xl"
+          style={{
+            left: `${left}%`, top: '-40px',
+            animation: `confetti-fall ${duration}s ease-in ${delay}s forwards`,
+          }}>
+          {emoji}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function ContractView() {
+  const { id } = useParams();
+  const nav    = useNavigate();
+
+  const [contract, setContract] = useState(null);
+  const [loading,  setLoading]  = useState(true);
+  const [phase,    setPhase]    = useState('read'); // read | seal | done
+  const [action,   setAction]   = useState(null);   // accept | reject
+  const [error,    setError]    = useState('');
+  const [visible,  setVisible]  = useState(false);
+
+  useEffect(() => {
+    api.get(`/contracts/${id}`)
+      .then(r => { setContract(r.data); setTimeout(() => setVisible(true), 100); })
+      .catch(() => setError('Vertrag nicht gefunden'))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const handleAccept = async () => {
+    setPhase('seal');
+    try {
+      await api.post(`/contracts/${id}/accept`);
+      setAction('accept');
+      setPhase('done');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Fehler');
+      setPhase('read');
+    }
+  };
+
+  const handleReject = async () => {
+    if (!confirm('Ablehnen' + '?')) return;
+    try {
+      await api.post(`/contracts/${id}/reject`);
+      setAction('reject');
+      setPhase('done');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Fehler');
+    }
+  };
+
+  if (loading) return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="text-5xl animate-spin">⏳</div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+      <div className="text-center">
+        <div className="text-5xl mb-4">❌</div>
+        <p className="text-red-400 mb-4">{error}</p>
+        <button onClick={() => nav('/child')} className="bg-blue-600 text-white font-bold px-6 py-2 rounded-xl">{'Zurück'}</button>
+      </div>
+    </div>
+  );
+
+  if (phase === 'seal') return (
+    <div className="min-h-screen bg-amber-950 flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-8xl animate-spin mb-4">🔮</div>
+        <p className="text-amber-300 text-xl font-bold">{'Vertrag wird versiegelt...'}</p>
+      </div>
+    </div>
+  );
+
+  if (phase === 'done') return (
+    <>
+      {action === 'accept' && <Confetti />}
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+        <div className={`max-w-sm w-full text-center bg-slate-800 rounded-2xl p-8 shadow-2xl border-2 ${action === 'accept' ? 'border-green-500' : 'border-slate-600'}`}>
+          {action === 'accept' ? (
+            <>
+              <div className="text-7xl mb-4 animate-seal-pop">🤝</div>
+              <h2 className="text-2xl font-black text-green-400 mb-2">{'Vertrag abgeschlossen!'}</h2>
+              <p className="text-slate-400 mb-2 text-sm">{t('contract_view.questActivated', { title: contract.title })}</p>
+              <div className="bg-amber-900/30 border border-amber-700/40 rounded-xl p-3 mb-6">
+                <p className="text-amber-300 text-sm">🏆 {'Belohnung'}: <span className="font-bold">{contract.prize_name}</span></p>
+                <p className="text-amber-400 text-sm">🪙 {'Benötigt'}: <span className="font-bold">{contract.target_coins} {'Münzen'}</span></p>
+              </div>
+              <button onClick={() => nav('/child')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all">
+                🗡️ {'Zu den Quests →'}
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="text-6xl mb-4">📜</div>
+              <h2 className="text-2xl font-black text-slate-300 mb-2">{'Vertrag abgelehnt'}</h2>
+              <button onClick={() => nav('/child')} className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl transition-all">
+                {'Zurück'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+
+  // ─── Main scroll view ────────────────────────────────────────────────────────
+  const pct = Math.round((contract.current_coins / contract.target_coins) * 100);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-amber-950 to-slate-900 p-4 flex flex-col items-center">
+      {/* Scroll decorative top */}
+      <div className="w-full max-w-md">
+        <div className="flex justify-center mb-2">
+          <div className="bg-amber-700 h-4 w-full max-w-sm rounded-full opacity-60" />
+        </div>
+
+        {/* The Scroll */}
+        <div
+          className={`parchment rounded-2xl border-4 border-amber-700 shadow-2xl transition-all duration-500 origin-top ${visible ? 'animate-scroll-unroll' : 'scale-y-0 opacity-0'}`}
+          style={{ borderImage: 'none' }}
+        >
+          {/* Scroll header */}
+          <div className="bg-amber-800 rounded-t-xl px-6 py-4 text-center">
+            <div className="flex justify-center gap-2 mb-1">
+              <span className="text-2xl">📜</span>
+              <span className="text-2xl">⚜️</span>
+              <span className="text-2xl">📜</span>
+            </div>
+            <h1 className="text-xl font-black text-amber-100 tracking-wide">{'OFFIZIELLER VERTRAG'}</h1>
+            <p className="text-amber-300 text-xs mt-0.5">BrainCoin Quest System · 2026</p>
+          </div>
+
+          {/* Content */}
+          <div className="px-6 py-5 text-slate-800 space-y-5">
+            {/* Teaching moment */}
+            <div className="bg-amber-100 border border-amber-300 rounded-xl p-3 text-xs">
+              <p className="font-bold text-amber-800 mb-1">📚 {'Was ist ein Vertrag?'}</p>
+              <p className="text-amber-700">
+                {'Ein Vertrag ist eine Vereinbarung zwischen zwei Personen. Beide einigen sich auf Bedingungen – erfüllst du sie, bekommst du eine Belohnung! Genau wie im echten Leben.'}
+              </p>
+            </div>
+
+            {/* Parties */}
+            <div>
+              <p className="text-xs text-amber-700 font-bold uppercase tracking-widest mb-2">{'Vertragsparteien'}</p>
+              <div className="flex gap-3">
+                <div className="flex-1 bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                  <div className="text-2xl">{contract.parent_avatar}</div>
+                  <p className="font-bold text-slate-800 text-sm mt-1">{contract.parent_name}</p>
+                  <p className="text-xs text-blue-600">{'👨‍👩‍👧 Elternteil'}</p>
+                </div>
+                <div className="flex items-center text-xl">🤝</div>
+                <div className="flex-1 bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                  <div className="text-2xl">{contract.child_avatar}</div>
+                  <p className="font-bold text-slate-800 text-sm mt-1">{contract.child_name}</p>
+                  <p className="text-xs text-green-600">{'🎒 Kind'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t-2 border-dashed border-amber-300" />
+
+            {/* Quest */}
+            <div>
+              <p className="text-xs text-amber-700 font-bold uppercase tracking-widest mb-2">{'Quest-Aufgabe'}</p>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                <p className="font-black text-slate-900 text-lg mb-1">{contract.title}</p>
+                {contract.description && <p className="text-slate-600 text-sm mb-2">{contract.description}</p>}
+                <div className="flex gap-4 text-sm flex-wrap">
+                  <span className="bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-lg">{contract.subject_emoji} {contract.subject_name}</span>
+                  <span className="bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-lg">📚 {t('grades.' + contract.grade)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Rules */}
+            <div>
+              <p className="text-xs text-amber-700 font-bold uppercase tracking-widest mb-2">{'Spielregeln'}</p>
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-2">
+                  <div className="text-xl mb-0.5">✅</div>
+                  <p className="text-green-700 font-bold">+{contract.points_per_correct}</p>
+                  <p className="text-green-600">{'richtig'}</p>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-2">
+                  <div className="text-xl mb-0.5">❌</div>
+                  <p className="text-red-700 font-bold">-{contract.penalty_per_wrong}</p>
+                  <p className="text-red-600">{'Fehler'}</p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-2">
+                  <div className="text-xl mb-0.5">⏱️</div>
+                  <p className="text-blue-700 font-bold">{contract.time_per_question}s</p>
+                  <p className="text-blue-600">{'pro Frage'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Prize */}
+            <div>
+              <p className="text-xs text-amber-700 font-bold uppercase tracking-widest mb-2">{'Ziel'}</p>
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-4 text-center">
+                <div className="text-4xl mb-2">{contract.prize_emoji}</div>
+                <p className="font-black text-slate-900 text-lg">{contract.prize_name}</p>
+                <p className="text-amber-600 font-bold mt-1">🪙 {contract.target_coins} {'Münzen'}</p>
+                {pct > 0 && (
+                  <div className="mt-3">
+                    <div className="w-full bg-amber-200 rounded-full h-2">
+                      <div className="bg-amber-500 h-2 rounded-full" style={{ width: `${pct}%` }} />
+                    </div>
+                    <p className="text-xs text-amber-600 mt-1">{'Bereits verdient:'} {contract.current_coins} ({pct}%)</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="border-t-2 border-dashed border-amber-300" />
+
+            {/* Status message */}
+            {contract.status === 'active' && (
+              <div className="bg-green-50 border border-green-300 rounded-xl p-3 text-center">
+                <p className="text-green-700 font-bold text-sm">{'✅ Vertrag aktiv! Quest hat begonnen.'}</p>
+              </div>
+            )}
+            {contract.status === 'completed' && (
+              <div className="bg-blue-50 border border-blue-300 rounded-xl p-3 text-center">
+                <p className="text-blue-700 font-bold text-sm">{'🏆 Vertrag abgeschlossen!'}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Scroll footer */}
+          <div className="bg-amber-800 rounded-b-xl px-6 py-3 text-center">
+            <p className="text-amber-300 text-xs">
+              {'Datum'}: {new Date(contract.created_at).toLocaleDateString(i18n.language)}
+            </p>
+          </div>
+        </div>
+
+        {/* Scroll decorative bottom */}
+        <div className="flex justify-center mt-2 mb-6">
+          <div className="bg-amber-700 h-4 w-full max-w-sm rounded-full opacity-60" />
+        </div>
+
+        {/* Action buttons */}
+        {contract.status === 'pending' && !contract.child_accepted && (
+          <div className="space-y-3 px-1">
+            <p className="text-center text-amber-300 text-sm font-bold">{'Setze deinen Stempel!'}</p>
+            <button
+              onClick={handleAccept}
+              className="w-full bg-green-600 hover:bg-green-500 active:scale-95 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-green-900/30 text-lg"
+            >
+              ✍️ {'Unterschreiben & annehmen'}
+            </button>
+            <button
+              onClick={handleReject}
+              className="w-full bg-slate-700 hover:bg-slate-600 active:scale-95 text-slate-300 font-bold py-3 rounded-2xl transition-all text-sm"
+            >
+              {'Ablehnen'}
+            </button>
+          </div>
+        )}
+
+        {(contract.status === 'active' || contract.status === 'completed') && (
+          <button onClick={() => nav('/child')} className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-2xl transition-all">
+            {'Zu den Quests →'}
+          </button>
+        )}
+
+        {error && <p className="text-red-400 text-sm text-center mt-3">{error}</p>}
+      </div>
+    </div>
+  );
+}
+
+=== contractcreator ===
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
+import api from '../../api';
+
+const GRADES = ['5','6','7','8','9'];
+const PRIZE_EMOJIS = ['🏆','🎮','📱','🎧','🎨','🚀','⚽','🎸','📚','🍕'];
+
+export default function ContractCreator() {
+  const nav = useNavigate();
+  const [step, setStep]       = useState(1);
+  const [subjects, setSubjects] = useState([]);
+  const [children, setChildren] = useState([]);
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState('');
+
+  const [form, setForm] = useState({
+    child_id:          '',
+    subject_id:        '',
+    grade:             '6',
+    title:             '',
+    description:       '',
+    prize_name:        '',
+    prize_emoji:       '🏆',
+    prize_coins:       100,
+    points_per_correct: 5,
+    penalty_per_wrong:  2,
+    time_per_question:  30,
+    target_coins:      100,
+  });
+
+  const set = (k) => (e) => {
+    const v = typeof e === 'object' && e.target ? e.target.value : e;
+    setForm(f => ({ ...f, [k]: v }));
+    if (k === 'prize_coins') setForm(f => ({ ...f, prize_coins: parseInt(v) || 0, target_coins: parseInt(v) || 0 }));
+  };
+
+  useEffect(() => {
+    Promise.all([api.get('/quiz/subjects'), api.get('/auth/children')])
+      .then(([s, c]) => {
+        setSubjects(s.data);
+        setChildren(c.data);
+        if (c.data.length) setForm(f => ({ ...f, child_id: c.data[0].id }));
+        if (s.data.length) setForm(f => ({ ...f, subject_id: s.data[0].id }));
+      });
+  }, []);
+
+  const submit = async () => {
+    if (!form.child_id || !form.subject_id || !form.title || !form.prize_name) {
+      setError('Bitte alle Pflichtfelder ausfüllen');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await api.post('/contracts', { ...form, prize_coins: parseInt(form.prize_coins), target_coins: parseInt(form.prize_coins) });
+      nav('/parent');
+    } catch (err) {
+      setError(err.response?.data?.error || 'Fehler');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectedSubject = subjects.find(s => s.id === parseInt(form.subject_id));
+  const selectedChild   = children.find(c => c.id === parseInt(form.child_id));
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200 px-4 py-4 flex items-center gap-3 sticky top-0 z-10">
+        <button onClick={() => step > 1 ? setStep(s => s-1) : nav('/parent')} className="p-2 hover:bg-slate-100 rounded-xl">
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <div className="flex-1">
+          <h1 className="font-black text-slate-900">{'Neuer Vertrag'}</h1>
+          <div className="flex gap-1 mt-1">
+            {[1,2,3].map(i => (
+              <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i <= step ? 'bg-blue-600' : 'bg-slate-200'}`} />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 py-6 pb-32 space-y-6">
+        {error && <div className="bg-red-100 border border-red-300 text-red-700 rounded-xl px-4 py-3 text-sm">{error}</div>}
+
+        {/* Step 1: Who & What */}
+        {step === 1 && (
+          <>
+            <div className="text-center py-2">
+              <div className="text-4xl mb-1">📋</div>
+              <h2 className="text-xl font-black text-slate-900">{'Schritt 1: Was & für wen?'}</h2>
+            </div>
+
+            {/* Child selector */}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">👦 {'Kind'}</label>
+              {children.length === 0 ? (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
+                  <p className="text-yellow-700 text-sm">{'Füge zuerst ein Kind im Bereich «Meine Kinder» hinzu'}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {children.map(ch => (
+                    <button
+                      key={ch.id}
+                      type="button"
+                      onClick={() => set('child_id')(ch.id)}
+                      className={`p-3 rounded-xl border-2 transition-all text-left ${parseInt(form.child_id) === ch.id ? 'border-blue-500 bg-blue-50' : 'border-slate-200 bg-white'}`}
+                    >
+                      <div className="text-2xl">{ch.avatar_emoji}</div>
+                      <div className="font-bold text-slate-900 text-sm mt-1">{ch.name}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Subject */}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">📚 {'Fach'}</label>
+              <div className="grid grid-cols-2 gap-2">
+                {subjects.map(s => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => set('subject_id')(s.id)}
+                    className={`p-3 rounded-xl border-2 transition-all text-left ${parseInt(form.subject_id) === s.id ? 'border-purple-500 bg-purple-50' : 'border-slate-200 bg-white'}`}
+                  >
+                    <div className="text-2xl">{s.emoji}</div>
+                    <div className="font-bold text-slate-900 text-sm mt-1">{t('subjects.' + s.slug, { defaultValue: s.name })}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Grade */}
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">🎓 {'Klasse'}</label>
+              <div className="flex gap-2 flex-wrap">
+                {GRADES.map(g => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => set('grade')(g)}
+                    className={`px-4 py-2 rounded-xl font-bold transition-all border-2 text-sm ${form.grade === g ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600'}`}
+                  >
+                    {t('grades.' + g)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={() => setStep(2)}
+              disabled={!form.child_id || !form.subject_id}
+              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold py-3 rounded-xl transition-all active:scale-95"
+            >
+              {'Weiter'} →
+            </button>
+          </>
+        )}
+
+        {/* Step 2: Quest details */}
+        {step === 2 && (
+          <>
+            <div className="text-center py-2">
+              <div className="text-4xl mb-1">🗺️</div>
+              <h2 className="text-xl font-black text-slate-900">{'Schritt 2: Quest-Details'}</h2>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">📌 {'Vertragsname'}</label>
+              <input
+                value={form.title}
+                onChange={set('title')}
+                placeholder={'z. B. "Mathematik April"'}
+                className="w-full bg-white border-2 border-slate-200 focus:border-blue-500 rounded-xl px-4 py-3 text-slate-900 outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">📝 {'Beschreibung (optional)'}</label>
+              <textarea
+                value={form.description}
+                onChange={set('description')}
+                rows={2}
+                placeholder={'Was soll getan werden...'}
+                className="w-full bg-white border-2 border-slate-200 focus:border-blue-500 rounded-xl px-4 py-3 text-slate-900 outline-none transition-all resize-none"
+              />
+            </div>
+
+            {/* Rules sliders */}
+            <div className="bg-white rounded-2xl p-4 border border-slate-200 space-y-4">
+              <h3 className="font-bold text-slate-800">⚙️ {'Spielregeln'}</h3>
+
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-slate-600">⏱️ {'Zeit pro Frage'}</span>
+                  <span className="font-bold text-blue-600">{form.time_per_question}с</span>
+                </div>
+                <input type="range" min="10" max="60" value={form.time_per_question}
+                  onChange={set('time_per_question')}
+                  className="w-full accent-blue-600" />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-slate-600">✅ {'Münzen pro richtiger Antwort'}</span>
+                  <span className="font-bold text-green-600">+{form.points_per_correct}🪙</span>
+                </div>
+                <input type="range" min="1" max="10" value={form.points_per_correct}
+                  onChange={set('points_per_correct')}
+                  className="w-full accent-green-600" />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="text-slate-600">❌ {'Abzug pro Fehler'}</span>
+                  <span className="font-bold text-red-500">-{form.penalty_per_wrong}🪙</span>
+                </div>
+                <input type="range" min="0" max="5" value={form.penalty_per_wrong}
+                  onChange={set('penalty_per_wrong')}
+                  className="w-full accent-red-500" />
+              </div>
+            </div>
+
+            <button
+              onClick={() => { if (!form.title) { setError('Gib den Vertragsname ein'); return; } setError(''); setStep(3); }}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all active:scale-95"
+            >
+              {'Weiter'} →
+            </button>
+          </>
+        )}
+
+        {/* Step 3: Prize */}
+        {step === 3 && (
+          <>
+            <div className="text-center py-2">
+              <div className="text-4xl mb-1">🏆</div>
+              <h2 className="text-xl font-black text-slate-900">{'Schritt 3: Belohnung!'}</h2>
+              <p className="text-slate-500 text-sm">{'Wähle eine Belohnung für das Kind'}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">{'Preisname'}</label>
+              <input
+                value={form.prize_name}
+                onChange={set('prize_name')}
+                placeholder={'z. B. "Kinobesuch"'}
+                className="w-full bg-white border-2 border-slate-200 focus:border-blue-500 rounded-xl px-4 py-3 text-slate-900 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">{'Preis-Symbol'}</label>
+              <div className="flex flex-wrap gap-2">
+                {PRIZE_EMOJIS.map(em => (
+                  <button key={em} type="button" onClick={() => set('prize_emoji')(em)}
+                    className={`text-2xl p-2 rounded-xl border-2 transition-all ${form.prize_emoji === em ? 'border-orange-400 bg-orange-50 scale-110' : 'border-slate-200 bg-white'}`}>
+                    {em}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <label className="font-bold text-slate-700">🪙 {'Benotigte Munzen'}</label>
+                <span className="font-black text-amber-500 text-lg">{form.prize_coins}</span>
+              </div>
+              <input type="range" min="50" max="1000" step="10" value={form.prize_coins}
+                onChange={(e) => {
+                  const v = parseInt(e.target.value);
+                  setForm(f => ({ ...f, prize_coins: v, target_coins: v }));
+                }}
+                className="w-full accent-amber-500" />
+              <div className="flex justify-between text-xs text-slate-400 mt-1"><span>50</span><span>1000</span></div>
+            </div>
+
+            {/* Preview */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl p-4">
+              <h4 className="font-bold text-amber-800 mb-3 text-sm">📋 {'Vorschau'}</h4>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-3xl">{selectedChild?.avatar_emoji}</span>
+                <div>
+                  <p className="font-bold text-slate-800">{selectedChild?.name}</p>
+                  <p className="text-xs text-slate-500">{t('subjects.' + selectedSubject?.slug, { defaultValue: selectedSubject?.name })} · {t('grades.' + form.grade)}</p>
+                </div>
+              </div>
+              <p className="text-slate-700 font-semibold text-sm">{form.title || '...'}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-xl">{form.prize_emoji}</span>
+                <span className="text-slate-700 text-sm font-medium">{form.prize_name || '...'}</span>
+                <span className="ml-auto text-amber-600 font-bold text-sm">🪙 {form.prize_coins}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={submit}
+              disabled={loading || !form.prize_name}
+              className="w-full bg-green-600 hover:bg-green-500 disabled:opacity-40 text-white font-bold py-4 rounded-xl transition-all active:scale-95 text-lg"
+            >
+              {loading ? '⏳' : '✍️ ' + 'Vertrag unterschreiben'}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+=== childhome ===
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Play } from 'lucide-react';
+import api from '../../api';
+import { useAuth } from '../../context/AuthContext';
+
+function QuestCard({ contract, onStart, starting }) {
+  const pct = Math.round((contract.current_coins / contract.target_coins) * 100);
+  return (
+    <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+      {/* Top */}
+      <div className="p-4">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="bg-blue-600/20 rounded-xl p-2.5">
+            <span className="text-2xl">{contract.subject_emoji}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-black text-white truncate">{contract.title}</h3>
+            <p className="text-slate-400 text-xs">{contract.subject_name} · {t('grades.' + contract.grade)}</p>
+            <p className="text-slate-500 text-xs">👨‍👩‍👧 {contract.parent_name}</p>
+          </div>
+          <span className="text-xl shrink-0">{contract.prize_emoji}</span>
+        </div>
+
+        {/* Prize */}
+        <div className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border border-amber-700/30 rounded-xl p-3 mb-3">
+          <p className="text-xs text-amber-400 mb-0.5">🏆 {'Belohnung'}</p>
+          <p className="text-amber-300 font-bold text-sm">{contract.prize_name}</p>
+        </div>
+
+        {/* Progress */}
+        <div>
+          <div className="flex justify-between text-xs text-slate-400 mb-1.5">
+            <span>{'Fortschritt'}</span>
+            <span className="text-amber-400 font-bold">{contract.current_coins} / {contract.target_coins} 🪙</span>
+          </div>
+          <div className="w-full bg-slate-700 rounded-full h-3 relative overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-green-500 to-emerald-400 h-3 rounded-full transition-all"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-xs text-slate-500 mt-1">
+            <span>🚀</span>
+            <span className="text-green-400 font-bold">{pct}%</span>
+            <span>🎯</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom action */}
+      <button
+        onClick={() => !starting && onStart(contract)}
+        disabled={starting}
+        className={`w-full py-3 font-bold text-white flex items-center justify-center gap-2 transition-all ${
+          starting ? 'bg-blue-800 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-500 active:scale-95'
+        }`}
+      >
+        {starting ? (
+          <><span className="animate-spin text-lg">⏳</span> {'Laden…'}</>
+        ) : (
+          <><Play className="w-4 h-4" /> {'Quiz starten'}</>
+        )}
+      </button>
+    </div>
+  );
+}
+
+function PendingContractCard({ contract, onView }) {
+  return (
+    <div className="bg-slate-800 rounded-2xl border-2 border-yellow-600/40 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-yellow-400 text-lg">📜</span>
+        <div>
+          <h4 className="font-bold text-white text-sm">{contract.title}</h4>
+          <p className="text-slate-400 text-xs">{contract.subject_name} · {t('grades.' + contract.grade)}</p>
+        </div>
+      </div>
+      <p className="text-yellow-400 text-xs mb-3">⏳ {'Erwartet deine Bestätigung'}</p>
+      <button onClick={() => onView(contract)}
+        className="w-full bg-yellow-600 hover:bg-yellow-500 active:scale-95 py-2 font-bold text-white rounded-xl text-sm transition-all">
+        {'Auftrag ansehen'} 📜
+      </button>
+    </div>
+  );
+}
+
+export default function ChildHome() {
+  const nav       = useNavigate();
+  const { user, refreshUser } = useAuth();
+  const [contracts, setContracts] = useState([]);
+  const [parents,   setParents]   = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [inviteCode,setInviteCode]= useState(null);
+  const [inviteInput,setInviteInput] = useState('');
+  const [inviteMode, setInviteMode]  = useState(false);
+  const [genLoading, setGenLoading]  = useState(false);
+  const [startingQuiz, setStartingQuiz] = useState(null); // contract id being started
+  const [acceptMsg,  setAcceptMsg]   = useState('');
+  const [acceptErr,  setAcceptErr]   = useState('');
+
+  const load = () =>
+    Promise.all([api.get('/contracts'), api.get('/auth/parents')])
+      .then(([c, p]) => { setContracts(c.data); setParents(p.data); })
+      .finally(() => setLoading(false));
+
+  useEffect(() => { load(); }, []);
+
+  const startQuiz = async (contract) => {
+    setStartingQuiz(contract.id);
+    try {
+      const { data } = await api.post('/quiz/sessions', { contract_id: contract.id });
+      nav(`/child/quiz/${data.session.id}`, { state: { session: data.session, questions: data.questions, contract } });
+    } catch (err) {
+      alert(err.response?.data?.error || 'Fehler');
+      setStartingQuiz(null);
+    }
+  };
+
+  const generateInvite = async () => {
+    setGenLoading(true);
+    try {
+      const { data } = await api.post('/auth/invite/generate');
+      setInviteCode(data.code);
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
+  const acceptInvite = async () => {
+    setAcceptErr('');
+    try {
+      const { data } = await api.post('/auth/invite/accept', { code: inviteInput.trim().toUpperCase() });
+      setAcceptMsg(`✅ ${'Verbunden!'} ${data.linkedUser?.name}!`);
+      setInviteInput('');
+      load();
+      refreshUser();
+    } catch (err) {
+      setAcceptErr(err.response?.data?.error || 'Fehler');
+    }
+  };
+
+  const pendingContracts = contracts.filter(c => c.status === 'pending' && !c.child_accepted);
+  const activeContracts  = contracts.filter(c => c.status === 'active');
+  const doneContracts    = contracts.filter(c => c.status === 'completed');
+
+  if (loading) return <div className="flex items-center justify-center h-64 text-4xl animate-spin">⏳</div>;
+
+  if (startingQuiz) return (
+    <div className="fixed inset-0 bg-blue-900/95 flex flex-col items-center justify-center z-50">
+      <div className="text-8xl animate-spin mb-6">🧠</div>
+      <p className="text-white text-2xl font-black mb-2">{'KI generiert Fragen…'}</p>
+      <p className="text-blue-300 text-sm">{'Das dauert 10–30 Sekunden. Bitte warten!'}</p>
+    </div>
+  );
+
+  return (
+    <div className="p-4 space-y-6">
+      {/* Streak / welcome */}
+      <div className="bg-gradient-to-r from-orange-600 to-red-500 rounded-2xl p-4 text-white shadow-lg">
+        <p className="text-sm opacity-80">{'Hallo'}, {user?.name}! 👋</p>
+        <p className="text-2xl font-black">🔥 {'Trainiere dein Gehirn!'}</p>
+        <p className="text-sm opacity-80 mt-0.5">{activeContracts.length} {'aktive Quests'}</p>
+      </div>
+
+      {/* Invite parent section */}
+      {parents.length === 0 && (
+        <div className="bg-slate-800 rounded-2xl p-4 border border-violet-600/30">
+          <h3 className="font-bold text-white mb-2">👨‍👩‍👧 {'Eltern einladen'}</h3>
+          <p className="text-slate-400 text-sm mb-3">{'Eltern können Aufgaben für dich erstellen!'}</p>
+
+          {!inviteMode ? (
+            <div className="space-y-2">
+              <button onClick={() => { setInviteMode(true); generateInvite(); }}
+                className="w-full bg-violet-700 hover:bg-violet-600 text-white font-bold py-2.5 rounded-xl text-sm transition-all">
+                📨 {'Code generieren'}
+              </button>
+              <button onClick={() => setInviteMode('enter')}
+                className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2.5 rounded-xl text-sm transition-all">
+                🔑 {'Code eingeben'}
+              </button>
+            </div>
+          ) : inviteMode === 'enter' ? (
+            <div className="space-y-2">
+              <input value={inviteInput} onChange={e => setInviteInput(e.target.value)}
+                placeholder={'Code eingeben (z.B. AB12CD34)'}
+                className="w-full bg-slate-700 rounded-xl px-4 py-2.5 text-white text-sm outline-none font-mono tracking-widest uppercase focus:ring-2 ring-violet-500" />
+              {acceptErr && <p className="text-red-400 text-xs">{acceptErr}</p>}
+              {acceptMsg && <p className="text-green-400 text-xs">{acceptMsg}</p>}
+              <div className="flex gap-2">
+                <button onClick={() => setInviteMode(false)} className="flex-1 bg-slate-700 text-white font-bold py-2 rounded-xl text-sm">{'Zurück'}</button>
+                <button onClick={acceptInvite} className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold py-2 rounded-xl text-sm">{'Annehmen'} ✅</button>
+              </div>
+            </div>
+          ) : (
+            <div>
+              {genLoading ? (
+                <div className="text-center py-3 text-3xl animate-spin">⏳</div>
+              ) : inviteCode ? (
+                <>
+                  <div className="bg-violet-900/50 rounded-xl p-4 text-center mb-2">
+                    <p className="text-violet-300 text-xs mb-1">{'Sende diesen Code deinen Eltern'}</p>
+                    <p className="text-3xl font-black font-mono tracking-widest text-white">{inviteCode}</p>
+                  </div>
+                  <button onClick={() => navigator.clipboard.writeText(`${window.location.origin}/invite/${inviteCode}`)}
+                    className="w-full bg-violet-700 hover:bg-violet-600 text-white font-bold py-2 rounded-xl text-sm">
+                    📋 {'Link kopieren'}
+                  </button>
+                </>
+              ) : null}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pending contracts */}
+      {pendingContracts.length > 0 && (
+        <section>
+          <h2 className="text-base font-black text-yellow-400 mb-3">📜 {'Neue Aufgaben von Eltern'}</h2>
+          <div className="space-y-3">
+            {pendingContracts.map(c => (
+              <PendingContractCard key={c.id} contract={c} onView={ct => nav(`/child/contract/${ct.id}`)} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Active quests */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-black text-white">🗡️ {'Aktive Aufgaben'}</h2>
+          <button
+            onClick={() => nav('/child/mistakes')}
+            className="flex items-center gap-1 text-xs font-bold text-red-400 hover:text-red-300 transition-colors"
+          >
+            🔴 {'Fehleranalyse'}
+          </button>
+        </div>
+        {activeContracts.length === 0 ? (
+          <div className="bg-slate-800 rounded-2xl p-6 text-center border border-slate-700">
+            <div className="text-4xl mb-2">😴</div>
+            <p className="text-slate-400 text-sm">{'Noch keine aktiven Aufgaben. Bitte Eltern, eine zu erstellen!'}</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {activeContracts.map(c => <QuestCard key={c.id} contract={c} onStart={startQuiz} starting={startingQuiz === c.id} />)}
+          </div>
+        )}
+      </section>
+
+      {/* Completed */}
+      {doneContracts.length > 0 && (
+        <section>
+          <h2 className="text-base font-black text-green-400 mb-3">✅ {'Abgeschlossene Aufgaben'}</h2>
+          <div className="space-y-2">
+            {doneContracts.map(c => (
+              <div key={c.id} className="bg-slate-800 rounded-xl p-3 flex items-center gap-3 border border-green-800/30">
+                <span className="text-xl">{c.prize_emoji}</span>
+                <div>
+                  <p className="font-bold text-white text-sm">{c.title}</p>
+                  <p className="text-green-400 text-xs">{'Belohnung'}: {c.prize_name}</p>
+                </div>
+                <span className="ml-auto text-green-400 text-xl">✅</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
+=== results ===
+import { useEffect, useState, useRef } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import api from '../../api';
+import { useAuth } from '../../context/AuthContext';
+
+function Confetti() {
+  const emojis = ['🌟','✨','🎊','🎉','⭐','💛','🏆','🥇','🎯','💎'];
+  return (
+    <div className="pointer-events-none fixed inset-0 overflow-hidden z-10">
+      {Array.from({ length: 24 }).map((_, i) => (
+        <span
+          key={i}
+          className="absolute text-2xl animate-bounce"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top:  `${Math.random() * 80}%`,
+            animationDelay: `${Math.random() * 1.5}s`,
+            animationDuration: `${0.8 + Math.random() * 0.8}s`,
+          }}
+        >
+          {emojis[i % emojis.length]}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Star({ active, delay = 0 }) {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setShow(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+  return (
+    <span className={`text-5xl transition-all duration-500 ${show ? 'scale-125 opacity-100' : 'scale-50 opacity-0'}`}>
+      {active ? '⭐' : '☆'}
+    </span>
+  );
+}
+
+export default function ResultsScreen() {
+  const { sessionId } = useParams();
+  const { state }     = useLocation();
+  const nav           = useNavigate();
+  const { refreshUser } = useAuth();
+
+  const [session,  setSession]  = useState(state?.session  || null);
+  const [contract, setContract] = useState(state?.contract || null);
+  const [loading,  setLoading]  = useState(!state?.session);
+  const refreshed = useRef(false);
+
+  useEffect(() => {
+    if (!state?.session) {
+      api.get(`/quiz/sessions/${sessionId}`)
+        .then(({ data }) => setSession(data))
+        .catch(() => nav('/child'))
+        .finally(() => setLoading(false));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (session && !refreshed.current) {
+      refreshed.current = true;
+      // Refresh user coins in header
+      if (typeof refreshUser === 'function') refreshUser();
+    }
+  }, [session]);
+
+  if (loading) return (
+    <div className="min-h-screen bg-indigo-700 flex items-center justify-center">
+      <div className="text-5xl animate-spin">🏆</div>
+    </div>
+  );
+
+  const total   = session.total_count  || 1;
+  const correct = session.correct_count || 0;
+  const pct     = Math.round((correct / total) * 100);
+  const coins   = session.score || 0;
+  const stars   = pct >= 90 ? 3 : pct >= 70 ? 2 : 1;
+  const great   = pct >= 70;
+
+  return (
+    <div className={`min-h-screen flex flex-col items-center justify-center p-6 ${great ? 'bg-gradient-to-b from-indigo-700 to-purple-800' : 'bg-gradient-to-b from-slate-700 to-slate-900'}`}>
+      {great && <Confetti />}
+
+      <div className="w-full max-w-sm bg-white rounded-3xl p-6 text-center shadow-2xl relative z-20">
+        {/* Stars */}
+        <div className="flex justify-center gap-2 mb-4">
+          <Star active={stars >= 1} delay={200} />
+          <Star active={stars >= 2} delay={500} />
+          <Star active={stars >= 3} delay={800} />
+        </div>
+
+        <h1 className="text-2xl font-black text-slate-900 mb-1">
+          {pct >= 90 ? 'Ausgezeichnet! 🥇' : pct >= 70 ? 'Sehr gut! 🎉' : 'Nicht schlecht! 💪'}
+        </h1>
+        <p className="text-slate-500 text-sm mb-6">
+          {contract ? `${contract.subject_name} · ${t('grades.' + contract.grade)}` : 'Quiz beenden 🏁'.replace(' 🏁', '')}
+        </p>
+
+        {/* Big score */}
+        <div className="text-6xl font-black mb-1" style={{ color: great ? '#6366f1' : '#94a3b8' }}>
+          {pct}%
+        </div>
+        <p className="text-slate-500 text-sm mb-6">{correct} / {total} {'Richtig'.toLowerCase()}</p>
+
+        {/* Stats row */}
+        <div className="flex justify-around bg-slate-50 rounded-2xl p-4 mb-6">
+          <div>
+            <div className="text-2xl font-black text-green-600">{correct}</div>
+            <div className="text-xs text-slate-500">{'Richtig'}</div>
+          </div>
+          <div>
+            <div className="text-2xl font-black text-red-500">{total - correct}</div>
+            <div className="text-xs text-slate-500">{'Fehler'}</div>
+          </div>
+          <div>
+            <div className="text-2xl font-black text-amber-500">+{coins}</div>
+            <div className="text-xs text-slate-500">{'Münzen'}</div>
+          </div>
+        </div>
+
+        {/* Contract progress */}
+        {contract && (
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-6 text-left">
+            <p className="text-xs font-bold text-amber-700 mb-1">🏆 {'Aufgabe'}: {contract.prize_name}</p>
+            <div className="w-full bg-amber-100 rounded-full h-2.5">
+              <div
+                className="bg-amber-500 h-2.5 rounded-full transition-all"
+                style={{ width: `${Math.min(100, ((contract.current_coins + coins) / contract.target_coins) * 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-amber-600 mt-1 text-right">
+              {Math.min(contract.target_coins, contract.current_coins + coins)} / {contract.target_coins} 🪙
+            </p>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <button
+          onClick={() => nav('/child')}
+          className="w-full bg-indigo-600 text-white font-black py-3.5 rounded-xl mb-3 active:scale-95 transition"
+        >
+          {'Startseite 🏠'}
+        </button>
+        {contract && (
+          <button
+            onClick={() => nav(`/child/contract/${contract.id}`)}
+            className="w-full bg-slate-100 text-slate-700 font-semibold py-3 rounded-xl active:scale-95 transition text-sm"
+          >
+            {'Zur Aufgabe →'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+=== parentdash ===
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, ChevronRight, Clock, BookOpen, Settings, BarChart2 } from 'lucide-react';
+import api from '../../api';
+import ContentSettings from './ContentSettings';
+
+function ChildCard({ child, onSettings, onStats }) {
+  return (
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+      <div className="flex items-center gap-3 mb-3">
+        <span className="text-3xl">{child.avatar_emoji}</span>
+        <div className="flex-1">
+          <h3 className="font-bold text-slate-900">{child.name}</h3>
+          <p className="text-slate-500 text-xs">{child.grade ? t('grades.' + child.grade) : 'Klasse nicht angegeben'}</p>
+        </div>
+        <div className="text-right flex items-center gap-2">
+          <div>
+            <p className="text-xl font-black text-amber-500">🪙 {child.total_coins}</p>
+            <p className="text-xs text-slate-500">{child.active_contracts} {'aktive'}</p>
+          </div>
+          <button
+            onClick={() => onStats(child)}
+            className="p-2 rounded-xl bg-blue-50 hover:bg-blue-100 transition-all"
+            title={'Statistik'}
+          >
+            <BarChart2 className="w-4 h-4 text-blue-600" />
+          </button>
+          <button
+            onClick={() => onSettings(child)}
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 transition-all"
+            title={'Inhaltsfilter'}
+          >
+            <Settings className="w-4 h-4 text-slate-500" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContractCard({ contract }) {
+  const pct = Math.round((contract.current_coins / contract.target_coins) * 100);
+  const statusColor = { active: 'bg-green-100 text-green-700', pending: 'bg-yellow-100 text-yellow-700', completed: 'bg-blue-100 text-blue-700', rejected: 'bg-red-100 text-red-700' };
+  return (
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">{contract.subject_emoji}</span>
+          <div>
+            <h4 className="font-bold text-slate-900 text-sm">{contract.title}</h4>
+            <p className="text-xs text-slate-500">{contract.child_name} · {contract.grade}</p>
+          </div>
+        </div>
+        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColor[contract.status] || statusColor.pending}`}>
+          {t('parent.status_' + contract.status)}
+        </span>
+      </div>
+
+      {contract.status === 'active' && (
+        <div className="mt-3">
+          <div className="flex justify-between text-xs text-slate-500 mb-1">
+            <span>{contract.prize_emoji} {contract.prize_name}</span>
+            <span>{pct}%</span>
+          </div>
+          <div className="w-full bg-slate-100 rounded-full h-2">
+            <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
+          </div>
+          <div className="text-xs text-slate-500 mt-1">{contract.current_coins} / {contract.target_coins} {'Münzen'}</div>
+        </div>
+      )}
+
+      {contract.status === 'pending' && !contract.parent_accepted && (
+        <p className="text-xs text-yellow-600 mt-2">⏳ {'Wartet auf deine Bestätigung'}</p>
+      )}
+      {contract.status === 'pending' && !contract.child_accepted && (
+        <p className="text-xs text-yellow-600 mt-2">⏳ {'Wartet auf Bestätigung des Kindes'}</p>
+      )}
+    </div>
+  );
+}
+
+export default function ParentDashboard() {
+  const nav = useNavigate();
+  const [children,      setChildren]      = useState([]);
+  const [contracts,     setContracts]     = useState([]);
+  const [loading,       setLoading]       = useState(true);
+  const [inviteCode,    setInviteCode]    = useState(null);
+  const [inviteExp,     setInviteExp]     = useState(null);
+  const [genLoading,    setGenLoading]    = useState(false);
+  const [settingsChild, setSettingsChild] = useState(null);
+
+  useEffect(() => {
+    Promise.all([api.get('/auth/children'), api.get('/contracts')])
+      .then(([ch, ct]) => { setChildren(ch.data); setContracts(ct.data); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const generateInvite = async () => {
+    setGenLoading(true);
+    try {
+      const { data } = await api.post('/auth/invite/generate');
+      setInviteCode(data.code);
+      setInviteExp(new Date(data.expiresAt));
+    } finally {
+      setGenLoading(false);
+    }
+  };
+
+  const copyInviteLink = () => {
+    const url = `${window.location.origin}/invite/${inviteCode}`;
+    navigator.clipboard.writeText(url);
+  };
+
+  const pendingContracts = contracts.filter(c => c.status === 'pending');
+  const activeContracts  = contracts.filter(c => c.status === 'active');
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-4xl animate-spin">⏳</div>
+    </div>
+  );
+
+  return (
+    <div className="p-4 space-y-6">
+      {/* Children section */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-black text-slate-900">{'Meine Kinder'}</h2>
+          <button
+            onClick={() => nav('/parent/children/new')}
+            className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold px-3 py-1.5 rounded-xl transition-all active:scale-95"
+          >
+            <Plus className="w-4 h-4" /> {'Hinzufügen'}
+          </button>
+        </div>
+
+        {children.length === 0 ? (
+          <div className="bg-white rounded-2xl p-6 text-center border-2 border-dashed border-slate-200">
+            <div className="text-4xl mb-2">👶</div>
+            <p className="text-slate-500 text-sm mb-4">{'Noch keine Kinder hinzugefügt'}</p>
+            <button onClick={() => nav('/parent/children/new')} className="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl text-sm">
+              {'Kind hinzufügen'}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {children.map(ch => <ChildCard key={ch.id} child={ch} onSettings={setSettingsChild} onStats={ch => nav(`/parent/stats/${ch.id}`)} />)}
+          </div>
+        )}
+      </section>
+
+      {/* Invite section */}
+      <section className="bg-gradient-to-r from-violet-700 to-blue-700 rounded-2xl p-4 text-white">
+        <h3 className="font-bold mb-1">📨 {'Kind per Code einladen'}</h3>
+        <p className="text-sm text-blue-200 mb-3">{'Kind bereits registriert? Gib ihm den Code'}</p>
+        {inviteCode ? (
+          <div>
+            <div className="bg-white/20 backdrop-blur rounded-xl p-3 text-center mb-2">
+              <p className="text-3xl font-black tracking-widest font-mono">{inviteCode}</p>
+              <p className="text-xs text-blue-200 mt-1">
+                {'Gültig bis'}: {inviteExp?.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+            <button onClick={copyInviteLink} className="w-full bg-white/20 hover:bg-white/30 font-bold py-2 rounded-xl text-sm transition-all">
+              📋 {'Link kopieren'}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={generateInvite}
+            disabled={genLoading}
+            className="w-full bg-white/20 hover:bg-white/30 disabled:opacity-50 font-bold py-2 rounded-xl text-sm transition-all"
+          >
+            {genLoading ? '⏳' : '🔑 ' + 'Code generieren'}
+          </button>
+        )}
+      </section>
+
+      {/* Pending contracts */}
+      {pendingContracts.length > 0 && (
+        <section>
+          <h2 className="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-yellow-500" /> {'Warten auf Bestätigung'}
+          </h2>
+          <div className="space-y-3">
+            {pendingContracts.map(c => <ContractCard key={c.id} contract={c} />)}
+          </div>
+        </section>
+      )}
+
+      {/* Active contracts */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+            <BookOpen className="w-5 h-5 text-blue-600" /> {'Aktive Verträge'}
+          </h2>
+          <button
+            onClick={() => nav('/parent/contracts/new')}
+            disabled={children.length === 0}
+            className="flex items-center gap-1 bg-green-600 hover:bg-green-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold px-3 py-1.5 rounded-xl transition-all active:scale-95"
+          >
+            <Plus className="w-4 h-4" /> {'Neu'}
+          </button>
+        </div>
+
+        {activeContracts.length === 0 ? (
+          <div className="bg-white rounded-2xl p-6 text-center border-2 border-dashed border-slate-200">
+            <div className="text-4xl mb-2">📜</div>
+            <p className="text-slate-500 text-sm">{'Noch keine aktiven Verträge'}</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {activeContracts.map(c => <ContractCard key={c.id} contract={c} />)}
+          </div>
+        )}
+      </section>
+
+      {settingsChild && (
+        <ContentSettings
+          childId={settingsChild.id}
+          childName={settingsChild.name}
+          onBack={() => setSettingsChild(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+=== payment ===
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import api from '../../api';
+import { useAuth } from '../../context/AuthContext';
+
+export default function PaymentScreen() {
+  const { user, refreshUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const [status, setStatus]     = useState(null);   // loaded from API
+  const [loading, setLoading]   = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
+  // Stripe redirects back with ?status=success or ?status=cancel
+  const stripeResult = searchParams.get('status');
+
+  useEffect(() => {
+    fetchStatus();
+    // Re-fetch user to get latest sub_status after Stripe redirect
+    if (stripeResult === 'success') refreshUser();
+  }, []);
+
+  const fetchStatus = () => {
+    setLoading(true);
+    api.get('/payments/status')
+      .then((r) => setStatus(r.data))
+      .catch(() => setStatus({ sub_status: 'none' }))
+      .finally(() => setLoading(false));
+  };
+
+  const handleSubscribe = async () => {
+    setActionLoading(true);
+    try {
+      const { data } = await api.post('/payments/checkout');
+      window.location.href = data.url;   // redirect to Stripe Checkout
+    } catch {
+      alert('Checkout konnte nicht gestartet werden. Bitte versuchen Sie es erneut.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePortal = async () => {
+    setActionLoading(true);
+    try {
+      const { data } = await api.get('/payments/portal');
+      window.location.href = data.url;
+    } catch {
+      alert('Abrechnungsportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const subStatus = status?.sub_status ?? 'none';
+
+  const trialDaysLeft = () => {
+    if (!status?.trial_ends_at) return 0;
+    const ms = new Date(status.trial_ends_at) - new Date();
+    return Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
+  };
+
+  const periodEndDate = status?.sub_current_period_end
+    ? new Date(status.sub_current_period_end).toLocaleDateString()
+    : null;
+
+  const statusInfo = {
+    none:     { label: 'Nicht abonniert', color: 'text-gray-500',  bg: 'bg-gray-100' },
+    trialing: { label: 'Testphase',     color: 'text-blue-600',  bg: 'bg-blue-50' },
+    active:   { label: 'Aktiv',         color: 'text-green-600', bg: 'bg-green-50' },
+    past_due: { label: 'Zahlung fehlgeschlagen', color: 'text-amber-600', bg: 'bg-amber-50' },
+    canceled: { label: 'Gekündigt',       color: 'text-red-500',   bg: 'bg-red-50' },
+  };
+
+  const info = statusInfo[subStatus] ?? statusInfo.none;
+
+  return (
+    <div className="max-w-lg mx-auto p-4 pt-8">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+        {'Abonnement'}
+      </h1>
+
+      {/* Success / cancel banner */}
+      {stripeResult === 'success' && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6 flex gap-3">
+          <span className="text-xl">🎉</span>
+          <p className="text-green-800 font-medium">
+            {'Willkommen! Ihr Abonnement ist jetzt aktiv.'}
+          </p>
+        </div>
+      )}
+      {stripeResult === 'cancel' && (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
+          <p className="text-gray-600">
+            {'Checkout wurde abgebrochen. Sie können jederzeit abonnieren.'}
+          </p>
+        </div>
+      )}
+
+      {/* Current status card */}
+      <div className={`${info.bg} rounded-2xl p-5 mb-6`}>
+        <div className="flex justify-between items-center mb-3">
+          <span className="font-semibold text-gray-700">
+            {'Aktueller Status'}
+          </span>
+          <span className={`font-bold ${info.color}`}>{info.label}</span>
+        </div>
+
+        {subStatus === 'trialing' && (
+          <p className="text-sm text-blue-700">
+            {t('subscription.trial_days_left', { count: trialDaysLeft(), defaultValue: '{{count}} days left in trial' })}
+          </p>
+        )}
+        {(subStatus === 'active' || subStatus === 'past_due') && periodEndDate && (
+          <p className="text-sm text-gray-600">
+            {'Erneuert am'} {periodEndDate}
+          </p>
+        )}
+      </div>
+
+      {/* Plan details */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-6">
+        <h2 className="font-bold text-lg text-gray-800 mb-1">
+          {'BrainCoin Elternplan'}
+        </h2>
+        <p className="text-3xl font-bold text-purple-600 mb-4">
+          €5
+          <span className="text-base font-normal text-gray-500">
+            /{'Monat'}
+          </span>
+        </p>
+        <ul className="space-y-2 text-sm text-gray-600">
+          <li className="flex gap-2"><span>✅</span>{'Unbegrenzte Verträge für Kinder'}</li>
+          <li className="flex gap-2"><span>✅</span>{'KI-gestützte Quizgenerierung'}</li>
+          <li className="flex gap-2"><span>✅</span>{'Fortschrittsstatistiken & Berichte'}</li>
+          <li className="flex gap-2"><span>✅</span>{'Bis zu 5 Kinderprofile'}</li>
+          <li className="flex gap-2"><span>🎁</span><strong>{'3 Tage kostenlose Testphase'}</strong></li>
+        </ul>
+      </div>
+
+      {/* Action buttons */}
+      {(subStatus === 'none' || subStatus === 'canceled') && (
+        <button
+          onClick={handleSubscribe}
+          disabled={actionLoading || loading}
+          className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 text-white font-bold py-3 rounded-xl transition-colors mb-3"
+        >
+          {actionLoading
+            ? 'Laden…'
+            : 'Abonnieren — 3 Tage kostenlos'}
+        </button>
+      )}
+
+      {(subStatus === 'active' || subStatus === 'trialing' || subStatus === 'past_due') && (
+        <button
+          onClick={handlePortal}
+          disabled={actionLoading || loading}
+          className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 text-gray-700 font-semibold py-3 rounded-xl transition-colors mb-3"
+        >
+          {actionLoading
+            ? 'Laden…'
+            : 'Abonnement verwalten'}
+        </button>
+      )}
+
+      <p className="text-xs text-center text-gray-400">
+        {'Zahlungen werden sicher über Stripe verarbeitet. Jederzeit kündbar.'}
+      </p>
+    </div>
+  );
+}
+
+=== mistake ===
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, AlertCircle, Dumbbell } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../api';
+
+function SubjectGroup({ subjectEmoji, subjectName, questions, onPractice, starting }) {
+  const ids = questions.map(q => q.id);
+  return (
+    <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden mb-4">
+      {/* Subject header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-slate-700/50">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">{subjectEmoji}</span>
+          <span className="font-bold text-white text-sm">{subjectName}</span>
+        </div>
+        <button
+          onClick={() => onPractice(ids)}
+          disabled={starting}
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all active:scale-95"
+        >
+          <Dumbbell className="w-3.5 h-3.5" />
+          {'Üben'} ({Math.min(ids.length, 10)})
+        </button>
+      </div>
+
+      {/* Question list */}
+      <div className="divide-y divide-slate-700">
+        {questions.map(q => (
+          <div key={q.id} className="flex items-start gap-3 px-4 py-2.5">
+            <span className="mt-0.5 text-red-400 shrink-0">
+              <AlertCircle className="w-4 h-4" />
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-slate-200 text-sm leading-snug line-clamp-2">{q.text}</p>
+            </div>
+            <div className="shrink-0 text-right">
+              <span className="text-red-400 text-xs font-bold">{q.wrong_count}×</span>
+              {q.correct_count > 0 && (
+                <p className="text-green-400 text-xs">{q.correct_count}✓</p>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function MistakeReview() {
+  const nav        = useNavigate();
+  const { user }   = useAuth();
+
+  const [mistakes,  setMistakes]  = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [starting,  setStarting]  = useState(false);
+
+  useEffect(() => {
+    api.get('/quiz/mistakes')
+      .then(({ data }) => setMistakes(data))
+      .catch(() => setMistakes([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const startPractice = async (ids) => {
+    setStarting(true);
+    try {
+      const { data } = await api.post('/quiz/sessions/practice', { question_ids: ids });
+      nav(`/child/quiz/${data.session.id}`, {
+        state: {
+          session: data.session,
+          questions: data.questions,
+          contract: null,
+          practice: true,
+        },
+      });
+    } catch (err) {
+      alert(err?.response?.data?.error || 'Fehler');
+      setStarting(false);
+    }
+  };
+
+  // Group by subject
+  const grouped = mistakes.reduce((acc, q) => {
+    const key = q.subject_id;
+    if (!acc[key]) {
+      const lang = i18n.language;
+      const name = lang === 'de' ? q.name_de : lang === 'en' ? q.name_en : q.subject_name;
+      acc[key] = { subjectName: name || q.subject_name, subjectEmoji: q.subject_emoji, questions: [] };
+    }
+    acc[key].questions.push(q);
+    return acc;
+  }, {});
+
+  const allIds = mistakes.map(q => q.id).slice(0, 10);
+
+  return (
+    <div className="min-h-screen bg-slate-900">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-red-700 to-orange-700 text-white px-4 py-4 sticky top-0 z-10">
+        <div className="flex items-center gap-3 max-w-2xl mx-auto">
+          <button onClick={() => nav('/child')} className="p-1.5 hover:bg-white/20 rounded-xl transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div>
+            <h1 className="font-black text-lg leading-tight">🔴 {'Fehleranalyse'}</h1>
+            <p className="text-orange-200 text-xs">{'Fragen, bei denen du Fehler gemacht hast'}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 max-w-2xl mx-auto">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <div className="text-4xl animate-spin">⏳</div>
+            <p className="text-slate-400">{'Fehler werden geladen…'}</p>
+          </div>
+        ) : mistakes.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="text-6xl">🎉</div>
+            <p className="text-white font-bold text-xl text-center">{'Keine Fehler! Weiter so! 🎉'}</p>
+            <p className="text-slate-400 text-sm text-center">{'Sehr gut! Mach weiter so!'}</p>
+            <button
+              onClick={() => nav('/child')}
+              className="mt-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-2.5 rounded-xl transition-all active:scale-95"
+            >
+              🏠 {'Zurück'}
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Practice all button */}
+            <button
+              onClick={() => startPractice(allIds)}
+              disabled={starting}
+              className="w-full mb-6 flex items-center justify-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 disabled:opacity-50 text-white font-black py-3.5 rounded-2xl shadow-lg transition-all active:scale-95 text-sm"
+            >
+              {starting ? (
+                <><span className="animate-spin text-lg">⏳</span> {'Laden…'}</>
+              ) : (
+                <><Dumbbell className="w-4 h-4" /> {'Alle Fehler üben'} ({Math.min(mistakes.length, 10)})</>
+              )}
+            </button>
+
+            {/* Subject groups */}
+            {Object.values(grouped).map((group, i) => (
+              <SubjectGroup
+                key={i}
+                subjectEmoji={group.subjectEmoji}
+                subjectName={group.subjectName}
+                questions={group.questions}
+                onPractice={startPractice}
+                starting={starting}
+              />
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+=== parentstats ===
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, CheckCircle, XCircle, Zap, BookOpen, Clock } from 'lucide-react';
+import api from '../../api';
+
+function StatCard({ icon, label, value, color }) {
+  return (
+    <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center gap-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
+        {icon}
+      </div>
+      <div>
+        <p className="text-2xl font-black text-slate-900">{value}</p>
+        <p className="text-slate-500 text-xs">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function SubjectRow({ subject, lang }) {
+  const name = lang === 'de' ? subject.name_de : lang === 'en' ? subject.name_en : subject.subject_name;
+  const total = subject.correct + subject.wrong;
+  const pct = total > 0 ? Math.round((subject.correct / total) * 100) : 0;
+  const barColor = pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-500';
+
+  return (
+    <div className="bg-white rounded-xl p-3 shadow-sm border border-slate-100">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-lg">{subject.subject_emoji}</span>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-slate-900 text-sm truncate">{name || subject.subject_name}</p>
+        </div>
+        <div className="text-right shrink-0 text-xs text-slate-500">
+          <span className="text-green-600 font-bold">{subject.correct}✓</span>
+          {' · '}
+          <span className="text-red-500 font-bold">{subject.wrong}✗</span>
+          {subject.mastered > 0 && (
+            <span className="text-blue-500 ml-1">· {subject.mastered} {'gemeistert'}</span>
+          )}
+        </div>
+      </div>
+      <div className="w-full bg-slate-100 rounded-full h-2">
+        <div className={`${barColor} h-2 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+      </div>
+      <p className="text-xs text-slate-400 mt-1 text-right">{pct}% {'richtig'}</p>
+    </div>
+  );
+}
+
+export default function ParentStats() {
+  const { childId } = useParams();
+  const nav         = useNavigate();
+
+  const [stats,   setStats]   = useState(null);
+  const [child,   setChild]   = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
+
+  useEffect(() => {
+    Promise.all([
+      api.get(`/quiz/stats/child/${childId}`),
+      api.get('/auth/children'),
+    ])
+      .then(([statsRes, childrenRes]) => {
+        setStats(statsRes.data);
+        const found = childrenRes.data.find(c => String(c.id) === String(childId));
+        setChild(found || null);
+      })
+      .catch(err => setError(err?.response?.data?.error || 'Fehler'))
+      .finally(() => setLoading(false));
+  }, [childId]);
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 gap-3">
+      <div className="text-4xl animate-spin">⏳</div>
+      <p className="text-slate-500">{'Statistik wird geladen…'}</p>
+    </div>
+  );
+
+  if (error) return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 gap-3 p-4">
+      <div className="text-4xl">😢</div>
+      <p className="text-slate-600 text-center">{error}</p>
+      <button onClick={() => nav('/parent')} className="bg-blue-600 text-white font-bold px-4 py-2 rounded-xl">
+        {'Zurück'}
+      </button>
+    </div>
+  );
+
+  const lang = i18n.language;
+  const hasData = stats.total_sessions > 0;
+
+  return (
+    <div className="min-h-screen bg-slate-100">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-700 to-indigo-700 text-white px-4 py-4 sticky top-0 z-10 shadow-md">
+        <div className="max-w-2xl mx-auto flex items-center gap-3">
+          <button onClick={() => nav('/parent')} className="p-1.5 hover:bg-white/20 rounded-xl transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-2xl">{child?.avatar_emoji || '🎮'}</span>
+            <div>
+              <h1 className="font-black text-base leading-tight">{child?.name || '...'}</h1>
+              <p className="text-blue-200 text-xs">{'Statistik des Kindes'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="p-4 max-w-2xl mx-auto space-y-5">
+        {!hasData ? (
+          <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-slate-100">
+            <div className="text-5xl mb-3">📊</div>
+            <p className="text-slate-600">{'Noch keine Daten. Das Kind hat noch keine Tests absolviert.'}</p>
+          </div>
+        ) : (
+          <>
+            {/* Overview cards */}
+            <div className="grid grid-cols-2 gap-3">
+              <StatCard
+                icon={<Clock className="w-5 h-5 text-blue-600" />}
+                label={'Abgeschlossene Sitzungen'}
+                value={stats.total_sessions}
+                color="bg-blue-100"
+              />
+              <StatCard
+                icon={<CheckCircle className="w-5 h-5 text-green-600" />}
+                label={'Richtige Antworten'}
+                value={stats.total_correct}
+                color="bg-green-100"
+              />
+              <StatCard
+                icon={<XCircle className="w-5 h-5 text-red-500" />}
+                label={'Fehler'}
+                value={stats.total_wrong}
+                color="bg-red-100"
+              />
+              <StatCard
+                icon={<Zap className="w-5 h-5 text-amber-500" />}
+                label={'Gemeisterte Fragen'}
+                value={stats.mastered_questions}
+                color="bg-amber-100"
+              />
+            </div>
+
+            {/* Accuracy bar */}
+            {(stats.total_correct + stats.total_wrong) > 0 && (() => {
+              const total = stats.total_correct + stats.total_wrong;
+              const pct   = Math.round((stats.total_correct / total) * 100);
+              const color = pct >= 70 ? 'from-green-500 to-emerald-400' : pct >= 40 ? 'from-yellow-500 to-amber-400' : 'from-red-500 to-orange-400';
+              return (
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="font-bold text-slate-700 text-sm">{'richtig'} %</p>
+                    <p className="font-black text-2xl text-slate-900">{pct}%</p>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden">
+                    <div className={`bg-gradient-to-r ${color} h-4 rounded-full transition-all`} style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* By subject */}
+            {stats.bySubject?.length > 0 && (
+              <section>
+                <h2 className="font-black text-slate-800 text-base mb-3 flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-blue-600" /> {'Nach Fach'}
+                </h2>
+                <div className="space-y-2">
+                  {stats.bySubject.map(s => (
+                    <SubjectRow key={s.subject_id} subject={s} lang={lang} />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Weak spots */}
+            {stats.weakTopics?.length > 0 && (
+              <section>
+                <h2 className="font-black text-slate-800 text-base mb-3 flex items-center gap-2">
+                  <XCircle className="w-5 h-5 text-red-500" /> {'Schwachstellen'}
+                </h2>
+                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                  {stats.weakTopics.map((q, i) => (
+                    <div key={q.id} className={`flex items-start gap-3 px-4 py-3 ${i < stats.weakTopics.length - 1 ? 'border-b border-slate-100' : ''}`}>
+                      <span className="text-red-400 font-black text-sm shrink-0 w-5 text-center">{q.wrong_count}×</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-slate-800 text-sm leading-snug line-clamp-2">{q.text}</p>
+                        <p className="text-slate-400 text-xs mt-0.5">{q.subject_emoji} {q.subject_name}</p>
+                      </div>
+                      {q.correct_count > 0 && (
+                        <span className="text-green-500 text-xs shrink-0">{q.correct_count}✓</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Recent sessions */}
+            {stats.recentSessions?.length > 0 && (
+              <section>
+                <h2 className="font-black text-slate-800 text-base mb-3 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-slate-500" /> {'Letzte Sitzungen'}
+                </h2>
+                <div className="space-y-2">
+                  {stats.recentSessions.map(s => {
+                    const pct = s.total_count > 0 ? Math.round((s.correct_count / s.total_count) * 100) : 0;
+                    const date = s.completed_at
+                      ? new Date(s.completed_at).toLocaleDateString(lang, { day: 'numeric', month: 'short' })
+                      : '';
+                    return (
+                      <div key={s.id} className="bg-white rounded-xl p-3 shadow-sm border border-slate-100 flex items-center gap-3">
+                        <span className="text-xl shrink-0">{s.subject_emoji || '📚'}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-slate-800 text-sm truncate">{s.contract_title || s.subject_name || '—'}</p>
+                          <p className="text-slate-400 text-xs">{date}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-black text-sm text-slate-900">{pct}%</p>
+                          <p className="text-xs text-slate-500">{s.correct_count}/{s.total_count}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+

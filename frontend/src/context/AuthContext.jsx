@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api';
-import i18n from '../i18n';
 
 const AuthContext = createContext(null);
 
@@ -23,11 +22,6 @@ export function AuthProvider({ children }) {
   const login = (token, userData) => {
     localStorage.setItem('bc_token', token);
     localStorage.setItem('bc_user', JSON.stringify(userData));
-    // Apply the user's saved language preference
-    if (userData.ui_language) {
-      i18n.changeLanguage(userData.ui_language);
-      localStorage.setItem('bc_lang', userData.ui_language);
-    }
     setUser(userData);
   };
 
