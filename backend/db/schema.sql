@@ -1,6 +1,10 @@
 -- =====================================================
 -- BrainCoin Database Schema
+-- Isolated in schema "braincoin" (shared Render PostgreSQL)
 -- =====================================================
+
+CREATE SCHEMA IF NOT EXISTS braincoin;
+SET search_path TO braincoin;
 
 -- Users (parents and children)
 CREATE TABLE IF NOT EXISTS users (

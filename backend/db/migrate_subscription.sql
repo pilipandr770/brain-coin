@@ -1,4 +1,5 @@
 -- Run once to add subscription fields to existing databases
+SET search_path TO braincoin;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin             BOOLEAN DEFAULT FALSE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id   VARCHAR(100);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_sub_id        VARCHAR(100);

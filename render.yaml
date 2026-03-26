@@ -2,12 +2,9 @@
 # Render.com Infrastructure as Code
 # Deploy: connect GitHub repo → Render auto-reads this file
 # =====================================================
-
-databases:
-  - name: braincoin-db
-    plan: free
-    databaseName: braincoin
-    user: braincoin_user
+# NOTE: Using shared Render PostgreSQL (ittoken_db).
+# BrainCoin tables are isolated in schema "braincoin".
+# Set DATABASE_URL manually in Render Dashboard → Environment.
 
 services:
   - type: web
@@ -19,11 +16,10 @@ services:
       - key: NODE_ENV
         value: production
 
-      # Automatically linked to the PostgreSQL database above
+      # Shared Render PostgreSQL — set manually in Dashboard:
+      # postgresql://ittoken_db_user:...@.../ittoken_db?options=-csearch_path%3Dbraincoin
       - key: DATABASE_URL
-        fromDatabase:
-          name: braincoin-db
-          property: connectionString
+        sync: false
 
       # Auto-generated secure secret — never touch manually
       - key: JWT_SECRET
