@@ -1,21 +1,21 @@
-﻿import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet,
   TouchableOpacity, ActivityIndicator, Linking,
 } from 'react-native';
 import api from '../../api';
 
-// вљ пёЏ  Payments happen on the web вЂ” no in-app purchase (avoids 30% App Store / Google Play fee).
+// Payments happen on the web — no in-app purchase (avoids 30% App Store / Google Play fee).
 // The app only shows subscription status and redirects to the website for payment management.
 const WEB_URL = 'http://localhost:3000/parent/payment'; // change to production URL when deploying
 
 const FEATURES = [
-  { emoji: 'рџ¤–', text: 'KI-generierte Fragen in 12+ FГ¤chern' },
-  { emoji: 'рџ“Љ', text: 'Detaillierte Lernstatistiken pro Kind' },
-  { emoji: 'рџ“‹', text: 'Unbegrenzte VertrГ¤ge & Quests' },
-  { emoji: 'рџ›ЎпёЏ', text: 'Inhaltsfilter & Sicherheitseinstellungen' },
-  { emoji: 'рџ‘Ґ', text: 'Mehrere Kinder verwalten' },
-  { emoji: 'рџЏ†', text: 'Rangliste & Freundesystem' },
+  { emoji: '🤖', text: 'KI-generierte Fragen in 12+ Fächern' },
+  { emoji: '📊', text: 'Detaillierte Lernstatistiken pro Kind' },
+  { emoji: '📋', text: 'Unbegrenzte Verträge & Quests' },
+  { emoji: '🛡️', text: 'Inhaltsfilter & Sicherheitseinstellungen' },
+  { emoji: '👥', text: 'Mehrere Kinder verwalten' },
+  { emoji: '🏆', text: 'Rangliste & Freundesystem' },
 ];
 
 export default function SubscriptionScreen() {
@@ -52,12 +52,12 @@ export default function SubscriptionScreen() {
     <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 60 }}>
       {/* Hero */}
       <View style={styles.hero}>
-        <Text style={styles.heroEmoji}>в­ђ</Text>
+        <Text style={styles.heroEmoji}>⭐</Text>
         <Text style={styles.heroTitle}>BrainCoin Pro</Text>
-        <Text style={styles.heroPrice}>5 в‚¬ / Monat</Text>
+        <Text style={styles.heroPrice}>5 € / Monat</Text>
         {!isActive && (
           <View style={styles.trialBadge}>
-            <Text style={styles.trialTxt}>рџЋЃ 3 Tage kostenlos testen</Text>
+            <Text style={styles.trialTxt}>🎁 3 Tage kostenlos testen</Text>
           </View>
         )}
       </View>
@@ -67,13 +67,13 @@ export default function SubscriptionScreen() {
         <View style={styles.activeBanner}>
           <Text style={styles.activeTxt}>
             {isTrial
-              ? `рџЋЃ Testphase aktiv${trialEnd ? ` bis ${trialEnd}` : ''}`
-              : `вњ… Abonnement aktiv${periodEnd ? ` bis ${periodEnd}` : ''}`}
+              ? `🎁 Testphase aktiv${trialEnd ? ` bis ${trialEnd}` : ''}`
+              : `✅ Abonnement aktiv${periodEnd ? ` bis ${periodEnd}` : ''}`}
           </Text>
         </View>
       ) : (
         <View style={styles.inactiveBanner}>
-          <Text style={styles.inactiveTxt}>вљ пёЏ Kein aktives Abonnement</Text>
+          <Text style={styles.inactiveTxt}>⚠️ Kein aktives Abonnement</Text>
         </View>
       )}
 
@@ -88,28 +88,28 @@ export default function SubscriptionScreen() {
         ))}
       </View>
 
-      {/* Web payment CTA вЂ” no in-app purchase to avoid 30% platform fee */}
+      {/* Web payment CTA — no in-app purchase to avoid 30% platform fee */}
       <TouchableOpacity style={styles.webBtn} onPress={openWebPayment} activeOpacity={0.8}>
-        <Text style={styles.webBtnEmoji}>рџЊђ</Text>
+        <Text style={styles.webBtnEmoji}>🌐</Text>
         <View style={{ flex: 1 }}>
           <Text style={styles.webBtnTitle}>
-            {isActive ? 'Abonnement verwalten' : 'Jetzt fГјr 5 в‚¬/Monat starten'}
+            {isActive ? 'Abonnement verwalten' : 'Jetzt für 5 €/Monat starten'}
           </Text>
-          <Text style={styles.webBtnSub}>Г–ffnet braincoin.app im Browser</Text>
+          <Text style={styles.webBtnSub}>Öffnet braincoin.app im Browser</Text>
         </View>
-        <Text style={styles.webBtnArrow}>вЂє</Text>
+        <Text style={styles.webBtnArrow}>›</Text>
       </TouchableOpacity>
 
       {!isActive && (
         <View style={styles.infoBox}>
           <Text style={styles.infoText}>
-            рџ’Ў Die Zahlung wird sicher Гјber unsere Website abgewickelt. Nach dem Abonnieren wird dein Zugang hier automatisch freigeschaltet.
+            💡 Die Zahlung wird sicher über unsere Website abgewickelt. Nach dem Abonnieren wird dein Zugang hier automatisch freigeschaltet.
           </Text>
         </View>
       )}
 
       <Text style={styles.legal}>
-        Jederzeit kГјndbar В· Sicher bezahlen mit Stripe В· Keine In-App-KГ¤ufe
+        Jederzeit kündbar · Sicher bezahlen mit Stripe · Keine In-App-Käufe
       </Text>
     </ScrollView>
   );
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   inactiveTxt:     { fontSize: 14, fontWeight: '700', color: '#991b1b' },
   featureBox:      {
     margin: 16, backgroundColor: '#fff', borderRadius: 16, padding: 20,
-    elevation: 1, boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+    elevation: 1,
   },
   featureTitle:    { fontSize: 15, fontWeight: '700', color: '#1e293b', marginBottom: 16 },
   featureRow:      { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   webBtn:          {
     marginHorizontal: 16, marginTop: 8, backgroundColor: '#1d4ed8',
     borderRadius: 16, padding: 18, flexDirection: 'row', alignItems: 'center', gap: 12,
-    elevation: 2, boxShadow: '0 2px 8px rgba(29,78,216,0.3)',
+    elevation: 2,
   },
   webBtnEmoji:     { fontSize: 24 },
   webBtnTitle:     { fontSize: 15, fontWeight: '800', color: '#fff' },
