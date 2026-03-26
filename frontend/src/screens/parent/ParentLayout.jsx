@@ -21,8 +21,13 @@ export default function ParentLayout() {
         </div>
         <div className="flex items-center gap-1">
           {user?.role === 'admin' && (
-            <button onClick={() => nav('/admin')} className="p-2 hover:bg-blue-600 rounded-xl transition-colors" title="Admin-Panel">
-              <ShieldCheck className="w-5 h-5" />
+            <button
+              onClick={() => nav('/admin')}
+              className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 active:scale-95 px-3 py-1.5 rounded-xl transition-all text-sm font-black"
+              title="Admin-Panel"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Admin
             </button>
           )}
           <button onClick={onLogout} className="p-2 hover:bg-blue-600 rounded-xl transition-colors">

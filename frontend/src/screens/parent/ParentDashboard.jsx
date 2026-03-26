@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, ChevronRight, Clock, BookOpen, Settings, BarChart2 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 import ContentSettings from './ContentSettings';
 
@@ -84,6 +85,7 @@ const STATUS_LABELS = { active: 'Aktiv', pending: 'Ausstehend', completed: 'Abge
 
 export default function ParentDashboard() {
   const nav = useNavigate();
+  const { user } = useAuth();
   const [children,      setChildren]      = useState([]);
   const [contracts,     setContracts]     = useState([]);
   const [loading,       setLoading]       = useState(true);
@@ -125,6 +127,21 @@ export default function ParentDashboard() {
 
   return (
     <div className="p-4 space-y-6">
+      {/* Admin banner — only visible to admin role */}
+      {user?.role === 'admin' && (
+        <button
+          onClick={() => nav('/admin')}
+          className="w-full bg-gradient-to-r from-purple-700 to-indigo-700 rounded-2xl p-4 text-white flex items-center gap-3 hover:opacity-90 active:scale-95 transition-all shadow-lg"
+        >
+          <span className="text-3xl">🛡️</span>
+          <div className="text-left flex-1">
+            <p className="font-black text-lg leading-none">Admin-Panel</p>
+            <p className="text-purple-200 text-sm mt-0.5">Benutzer, Abos & Fächer verwalten</p>
+          </div>
+          <span className="text-2xl font-bold">›</span>
+        </button>
+      )}
+
       {/* Children section */}
       <section>
         <div className="flex items-center justify-between mb-3">
