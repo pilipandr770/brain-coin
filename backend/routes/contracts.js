@@ -48,7 +48,7 @@ router.post('/', auth, async (req, res) => {
     let finalParentId, finalChildId;
     let childAccepted = false, parentAccepted = false;
 
-    if (req.user.role === 'parent') {
+    if (['parent', 'admin'].includes(req.user.role)) {
       finalParentId = req.user.id;
       finalChildId  = child_id;
       parentAccepted = true;
