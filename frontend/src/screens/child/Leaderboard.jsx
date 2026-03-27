@@ -56,33 +56,42 @@ export default function Leaderboard() {
       {/* Top-3 podium */}
       {!loading && board.length >= 3 && (
         <div className="flex items-end justify-center gap-3 bg-slate-800 px-4 pt-4 pb-6">
-          {/* 2nd */}
-          <div className="flex flex-col items-center">
-            <div className="text-3xl mb-1">{board[1].avatar_emoji}</div>
-            <div className="bg-slate-600 text-white text-xs font-bold px-3 py-8 rounded-t-xl text-center w-20">
-              <div className="text-lg">🥈</div>
-              <div className="truncate text-xs">{board[1].name.split(' ')[0]}</div>
-              <div className="text-amber-400 font-black">{board[1].total_coins}</div>
-            </div>
-          </div>
-          {/* 1st */}
-          <div className="flex flex-col items-center">
-            <div className="text-3xl mb-1">{board[0].avatar_emoji}</div>
-            <div className="bg-amber-500 text-white text-xs font-bold px-3 py-14 rounded-t-xl text-center w-20">
-              <div className="text-xl">🥇</div>
-              <div className="truncate text-xs">{board[0].name.split(' ')[0]}</div>
-              <div className="font-black">{board[0].total_coins}</div>
-            </div>
-          </div>
-          {/* 3rd */}
-          <div className="flex flex-col items-center">
-            <div className="text-3xl mb-1">{board[2].avatar_emoji}</div>
-            <div className="bg-slate-700 text-white text-xs font-bold px-3 py-5 rounded-t-xl text-center w-20">
-              <div className="text-lg">🥉</div>
-              <div className="truncate text-xs">{board[2].name.split(' ')[0]}</div>
-              <div className="text-amber-400 font-black">{board[2].total_coins}</div>
-            </div>
-          </div>
+          {[1, 0, 2].map((pos) => {
+            const row = board[pos];
+            const isMe = row.id === user?.id;
+            const isFriend = friends.has(row.id);
+            const isPend = pending.has(row.id);
+            const heights = [' py-8', ' py-14', ' py-5'];
+            const bgs = ['bg-slate-600', 'bg-amber-500', 'bg-slate-700'];
+            const medals = ['🥈', '🥇', '🥉'];
+            const displayOrder = [1, 0, 2];
+            const colIdx = displayOrder.indexOf(pos);
+            return (
+              <div key={pos} className="flex flex-col items-center">
+                <div className="text-3xl mb-1">{row.avatar_emoji}</div>
+                <div className={`${bgs[pos]} text-white text-xs font-bold px-3${heights[pos]} rounded-t-xl text-center w-20`}>
+                  <div className={pos === 0 ? 'text-xl' : 'text-lg'}>{medals[pos]}</div>
+                  <div className="truncate text-xs">{row.name.split(' ')[0]}</div>
+                  <div className={pos === 0 ? 'font-black' : 'text-amber-400 font-black'}>{row.total_coins}</div>
+                  {!isMe && (
+                    <div className="mt-1">
+                      {isFriend ? (
+                        <span className="text-green-400 text-[10px]">✓</span>
+                      ) : isPend ? (
+                        <span className="text-slate-300 text-[10px]">…</span>
+                      ) : (
+                        <button
+                          disabled={sending === row.id}
+                          onClick={() => sendRequest(row.id)}
+                          className="text-indigo-300 font-bold text-[10px] active:scale-95 transition disabled:opacity-50"
+                        >+ Freund</button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 

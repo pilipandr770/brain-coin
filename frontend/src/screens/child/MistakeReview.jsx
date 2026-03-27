@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, AlertCircle, Dumbbell } from 'lucide-react';
+import { AlertCircle, Dumbbell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 
@@ -97,11 +97,8 @@ export default function MistakeReview() {
   return (
     <div className="min-h-screen bg-slate-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-red-700 to-orange-700 text-white px-4 py-4 sticky top-0 z-10">
+      <div className="bg-gradient-to-r from-red-700 to-orange-700 text-white px-4 py-4">
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
-          <button onClick={() => nav('/child')} className="p-1.5 hover:bg-white/20 rounded-xl transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
           <div>
             <h1 className="font-black text-lg leading-tight">🔴 {'Fehleranalyse'}</h1>
             <p className="text-orange-200 text-xs">{'Fragen, bei denen du Fehler gemacht hast'}</p>

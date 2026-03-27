@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -307,7 +307,6 @@ function ChallengeCard({ ch, myId, onAction, onPlay }) {
 // ── Main screen ───────────────────────────────────────────────────────────────
 export default function ChallengeScreen() {
   const { user } = useAuth();
-  const nav = useNavigate();
   const { state: routeState } = useLocation();
 
   const [challenges,   setChallenges]   = useState([]);
@@ -350,9 +349,8 @@ export default function ChallengeScreen() {
   return (
     <div className="flex flex-col h-full bg-slate-900">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 pt-10 pb-5">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 pt-5 pb-5">
         <div className="flex items-center gap-2 mb-1">
-          <button onClick={() => nav(-1)} className="text-white/70 hover:text-white mr-1">←</button>
           <h1 className="text-xl font-black text-white">⚡ Herausforderungen</h1>
         </div>
         {pending.filter(c => c.challenged_id === user?.id).length > 0 && (

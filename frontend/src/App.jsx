@@ -74,14 +74,14 @@ export default function App() {
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="friends"     element={<FriendsScreen />} />
             <Route path="friends/:id/chat" element={<ChatScreen />} />
+            <Route path="challenges"  element={<ChallengeScreen />} />
+            <Route path="mistakes"    element={<MistakeReview />} />
           </Route>
 
           {/* Child — full-screen flows (no layout nav) */}
           <Route path="/child/contract/:id" element={<Guard role="child"><ContractView /></Guard>} />
           <Route path="/child/quiz/:sessionId" element={<Guard role="child"><QuizScreen /></Guard>} />
           <Route path="/child/results/:sessionId" element={<Guard role="child"><ResultsScreen /></Guard>} />
-          <Route path="/child/mistakes" element={<Guard role="child"><MistakeReview /></Guard>} />
-          <Route path="/child/challenges" element={<Guard role="child"><ChallengeScreen /></Guard>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
