@@ -269,25 +269,33 @@ router.post('/children', auth, async (req, res) => {
   if (!name || !email || !password) return res.status(400).json({ error: 'Alle Felder ausfüllen' });
   if (password.length < 6) return res.status(400).json({ error: 'Passwort mindestens 6 Zeichen' });
 
+  const client = await pool.connect();
   try {
-    const exists = await pool.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+    const exists = await client.query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
     if (exists.rows.length) return res.status(409).json({ error: 'E-Mail bereits vergeben' });
 
+    await client.query('BEGIN');
     const hash = await bcrypt.hash(password, 12);
-    const child = await pool.query(
+    const child = await client.query(
       `INSERT INTO users (name, email, password_hash, role, age)
        VALUES ($1, $2, $3, 'child', $4)
        RETURNING id, name, email, role, age, total_coins, avatar_emoji`,
       [name.trim(), email.toLowerCase(), hash, age || null]
     );
-    await pool.query(
-      "INSERT INTO parent_child (parent_id, child_id, status) VALUES ($1, $2, 'accepted')",
+    await client.query(
+      `INSERT INTO parent_child (parent_id, child_id, status)
+       VALUES ($1, $2, 'accepted')
+       ON CONFLICT (parent_id, child_id) DO UPDATE SET status = 'accepted'`,
       [req.user.id, child.rows[0].id]
     );
+    await client.query('COMMIT');
     res.status(201).json(child.rows[0]);
   } catch (err) {
-    console.error(err);
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('POST /auth/children error:', err);
     res.status(500).json({ error: 'Serverfehler' });
+  } finally {
+    client.release();
   }
 });
 

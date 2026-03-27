@@ -63,7 +63,10 @@ router.post('/', auth, async (req, res) => {
       "SELECT id FROM parent_child WHERE parent_id=$1 AND child_id=$2 AND status='accepted'",
       [finalParentId, finalChildId]
     );
-    if (!rel.rows[0]) return res.status(403).json({ error: 'Keine bestätigte Eltern-Kind-Verbindung' });
+    if (!rel.rows[0]) {
+      console.warn(`[contracts] 403 — no accepted parent_child: parent=${finalParentId} child=${finalChildId} requester=${req.user.id}`);
+      return res.status(403).json({ error: 'Keine bestätigte Eltern-Kind-Verbindung' });
+    }
 
     const { rows } = await pool.query(
       `INSERT INTO contracts

@@ -11,7 +11,7 @@ module.exports = async function requireSubscription(req, res, next) {
 
   try {
     const { rows } = await pool.query(
-      'SELECT subscription_status, subscription_end, role FROM users WHERE id = $1',
+      'SELECT sub_status, sub_current_period_end, role FROM users WHERE id = $1',
       [req.user.id]
     );
     const user = rows[0];
@@ -22,12 +22,12 @@ module.exports = async function requireSubscription(req, res, next) {
 
     const now = new Date();
 
-    if (user.subscription_status === 'active') return next();
+    if (user.sub_status === 'active') return next();
 
     // 3-day trial: check created_at within 3 days handled by default 'trial' status
-    if (user.subscription_status === 'trial') return next();
+    if (user.sub_status === 'trial') return next();
 
-    if (user.subscription_status === 'trialing' && user.subscription_end && new Date(user.subscription_end) > now) {
+    if (user.sub_status === 'trialing' && user.sub_current_period_end && new Date(user.sub_current_period_end) > now) {
       return next();
     }
 
