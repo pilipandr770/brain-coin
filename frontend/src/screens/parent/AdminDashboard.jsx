@@ -37,17 +37,19 @@ export default function AdminDashboard() {
       setSubjects(subj.data);
     }).finally(() => setLoading(false));
 
-    // Poll gen status every 3 s
+    // Poll gen status sequentially (next request only fires AFTER previous completes)
+    let genTimer = null;
+    let cancelled = false;
     const pollGen = async () => {
-      try { const { data } = await api.get('/admin/gen/status'); setGenStatus(data); } catch {}
+      try { const { data } = await api.get('/admin/gen/status'); if (!cancelled) setGenStatus(data); } catch {}
+      if (!cancelled) genTimer = setTimeout(pollGen, 3000);
     };
     pollGen();
-    const genInterval = setInterval(pollGen, 3000);
 
     // Load pool stats once
     api.get('/admin/gen/pool').then(r => setPoolStats(r.data)).catch(() => {});
 
-    return () => clearInterval(genInterval);
+    return () => { cancelled = true; clearTimeout(genTimer); };
   }, []);
 
   const updateSubscription = async (userId, newStatus) => {

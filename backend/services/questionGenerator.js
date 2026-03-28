@@ -95,7 +95,7 @@ Gib NUR ein JSON-Array zurück, keinerlei weiterer Text. Jedes Element:
 WICHTIG: answers[0] ist IMMER die richtige Antwort. correct_index ist immer 0.`;
 
   const message = await client.messages.create({
-    model:     'claude-opus-4-5',
+    model:     'claude-haiku-4-5',
     max_tokens: 8192,
     messages: [{ role: 'user', content: prompt }],
   });
