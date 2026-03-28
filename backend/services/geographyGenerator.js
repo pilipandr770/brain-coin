@@ -173,23 +173,23 @@ function generateCapitalQuestions() {
   const questions = [];
 
   CAPITALS_DATA.forEach(([country, capital]) => {
-    // Type 1: country → capital
+    // Type 1: country → capital (correct at index 0, saveToDb shuffles)
     const wrongCapitals = pickRandom(CAPITALS, capital, 3);
-    const answers1 = shuffle([capital, ...wrongCapitals]);
+    const answers1 = [capital, ...wrongCapitals];
     questions.push({
       text: `Was ist die Hauptstadt von ${country}?`,
       answers: answers1,
-      correct_index: answers1.indexOf(capital),
+      correct_index: 0,
       difficulty: 'medium',
     });
 
-    // Type 2: capital → country
+    // Type 2: capital → country (correct at index 0, saveToDb shuffles)
     const wrongCountries = pickRandom(COUNTRIES, country, 3);
-    const answers2 = shuffle([country, ...wrongCountries]);
+    const answers2 = [country, ...wrongCountries];
     questions.push({
       text: `In welchem Land ist ${capital} die Hauptstadt?`,
       answers: answers2,
-      correct_index: answers2.indexOf(country),
+      correct_index: 0,
       difficulty: 'medium',
     });
   });
@@ -268,23 +268,23 @@ function generateRiverQuestions() {
   const allCountries  = RIVERS_DATA.map(([, country]) => country);
 
   RIVERS_DATA.forEach(([river, country, continent]) => {
-    // Type 1: country → river
+    // Type 1: in which country? (correct at index 0)
     const wrongCountries = pickRandom(allCountries, country, 3);
-    const ans1 = shuffle([country, ...wrongCountries]);
+    const ans1 = [country, ...wrongCountries];
     questions.push({
       text: `Durch welches Land fließt der Fluss ${river} hauptsächlich?`,
       answers: ans1,
-      correct_index: ans1.indexOf(country),
+      correct_index: 0,
       difficulty: 'medium',
     });
 
-    // Type 2: continent → river (which river is on this continent?)
+    // Type 2: on which continent? (correct at index 0)
     const wrongContinents = pickRandom(allContinents, continent, 3);
-    const ans2 = shuffle([continent, ...wrongContinents]);
+    const ans2 = [continent, ...wrongContinents];
     questions.push({
       text: `Auf welchem Kontinent liegt der Fluss ${river}?`,
       answers: ans2,
-      correct_index: ans2.indexOf(continent),
+      correct_index: 0,
       difficulty: 'easy',
     });
   });
@@ -298,23 +298,23 @@ function generateMountainQuestions() {
   const allRanges    = MOUNTAINS_DATA.map(([,, r]) => r);
 
   MOUNTAINS_DATA.forEach(([mountain, country, range]) => {
-    // Type 1: in which country?
+    // Type 1: in which country? (correct at index 0)
     const wrongCountries = pickRandom(allCountries, country, 3);
-    const ans1 = shuffle([country, ...wrongCountries]);
+    const ans1 = [country, ...wrongCountries];
     questions.push({
       text: `In welchem Land befindet sich der Berg ${mountain}?`,
       answers: ans1,
-      correct_index: ans1.indexOf(country),
+      correct_index: 0,
       difficulty: 'medium',
     });
 
-    // Type 2: in which mountain range?
+    // Type 2: to which mountain range? (correct at index 0)
     const wrongRanges = pickRandom(allRanges, range, 3);
-    const ans2 = shuffle([range, ...wrongRanges]);
+    const ans2 = [range, ...wrongRanges];
     questions.push({
       text: `Zu welchem Gebirge gehört der Berg ${mountain}?`,
       answers: ans2,
-      correct_index: ans2.indexOf(range),
+      correct_index: 0,
       difficulty: 'hard',
     });
   });

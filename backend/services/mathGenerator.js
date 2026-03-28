@@ -3,20 +3,11 @@
  *
  * Generates arithmetic multiple-choice questions algorithmically — no AI API needed.
  * Two random numbers, random operator, correct answer computed, 3 plausible wrong answers.
- * Answer positions are shuffled so the correct answer is never always first.
+ * Correct answer is placed at index 0; saveToDb handles the shuffle and stores real index.
  */
 
 function rand(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
 }
 
 function generateWrongAnswers(correct, count = 3) {
@@ -74,15 +65,15 @@ function generateOneMathQuestion(grade) {
   }
 
   const wrongs = generateWrongAnswers(correct);
-  const answers = shuffle([correct, ...wrongs]);
-  const correctIndex = answers.indexOf(correct);
+  // Put correct answer at index 0 — saveToDb will shuffle and track correct_index
+  const answers = [correct, ...wrongs];
 
   const opDisplay = { '+': '+', '-': '−', '*': '×', '/': '÷' }[op];
 
   return {
     text: `${a} ${opDisplay} ${b} = ?`,
     answers: answers.map(String),
-    correct_index: correctIndex,
+    correct_index: 0,  // always 0 — saveToDb shuffles and stores the real index
     difficulty: gradeNum <= 5 ? 'easy' : gradeNum <= 7 ? 'medium' : 'hard',
   };
 }
