@@ -167,10 +167,9 @@ function pickRandom(arr, exclude, count) {
 }
 
 /**
- * Generate all possible geography questions from the dataset.
- * Returns an array of question objects ready to be saved to the DB.
+ * Generate capital city questions (country→capital, capital→country).
  */
-function generateAllGeographyQuestions() {
+function generateCapitalQuestions() {
   const questions = [];
 
   CAPITALS_DATA.forEach(([country, capital]) => {
@@ -198,4 +197,146 @@ function generateAllGeographyQuestions() {
   return questions;
 }
 
-module.exports = { generateAllGeographyQuestions, CAPITALS_COUNT: CAPITALS_DATA.length };
+// ─── Rivers dataset ──────────────────────────────────────────────────────────
+// [name, main_country, continent]
+const RIVERS_DATA = [
+  ['Nil',             'Ägypten',                       'Afrika'],
+  ['Amazonas',        'Brasilien',                     'Südamerika'],
+  ['Jangtse',         'China',                         'Asien'],
+  ['Mississippi',     'USA',                           'Nordamerika'],
+  ['Ob',              'Russland',                      'Asien'],
+  ['Jenissei',        'Russland',                      'Asien'],
+  ['Gelber Fluss',    'China',                         'Asien'],
+  ['Amur',            'Russland',                      'Asien'],
+  ['Kongo',           'Demokratische Republik Kongo',  'Afrika'],
+  ['Niger',           'Nigeria',                       'Afrika'],
+  ['Wolga',           'Russland',                      'Europa'],
+  ['Donau',           'Rumänien',                      'Europa'],
+  ['Rhein',           'Deutschland',                   'Europa'],
+  ['Elbe',            'Deutschland',                   'Europa'],
+  ['Oder',            'Polen',                         'Europa'],
+  ['Weichsel',        'Polen',                         'Europa'],
+  ['Seine',           'Frankreich',                    'Europa'],
+  ['Themse',          'Großbritannien',                'Europa'],
+  ['Dnjepr',          'Ukraine',                       'Europa'],
+  ['Tiber',           'Italien',                       'Europa'],
+  ['Euphrat',         'Irak',                          'Asien'],
+  ['Tigris',          'Irak',                          'Asien'],
+  ['Ganges',          'Indien',                        'Asien'],
+  ['Indus',           'Pakistan',                      'Asien'],
+  ['Mekong',          'Vietnam',                       'Asien'],
+  ['Orinoco',         'Venezuela',                     'Südamerika'],
+  ['Paraná',          'Argentinien',                   'Südamerika'],
+  ['Sambesi',         'Sambia',                        'Afrika'],
+  ['Murray',          'Australien',                    'Australien'],
+  ['Jordan',          'Israel',                        'Asien'],
+];
+
+// ─── Mountains dataset ───────────────────────────────────────────────────────
+// [name, country, mountain_range]
+const MOUNTAINS_DATA = [
+  ['Mount Everest',       'Nepal',           'Himalaya'],
+  ['K2',                  'Pakistan',        'Karakorum'],
+  ['Kangchendzönga',      'Nepal',           'Himalaya'],
+  ['Mont Blanc',          'Frankreich',      'Alpen'],
+  ['Elbrus',              'Russland',        'Kaukasus'],
+  ['Kilimandscharo',      'Tansania',        'Ostafrika'],
+  ['Aconcagua',           'Argentinien',     'Anden'],
+  ['Denali',              'USA',             'Alaska Range'],
+  ['Zugspitze',           'Deutschland',     'Alpen'],
+  ['Großglockner',        'Österreich',      'Alpen'],
+  ['Matterhorn',          'Schweiz',         'Alpen'],
+  ['Fuji',                'Japan',           'Japanische Inseln'],
+  ['Olymp',               'Griechenland',    'Makedonisches Gebirge'],
+  ['Ätna',                'Italien',         'Apenninen'],
+  ['Teide',               'Spanien',         'Kanarische Inseln'],
+  ['Ben Nevis',           'Großbritannien',  'Schottische Highlands'],
+  ['Triglav',             'Slowenien',       'Julische Alpen'],
+  ['Rysy',                'Polen',           'Hohe Tatra'],
+  ['Vinson-Massif',       'Antarktis',       'Ellsworthberge'],
+  ['Chimborazo',          'Ecuador',         'Anden'],
+  ['Logan',               'Kanada',          'St.-Elias-Berge'],
+  ['Pico de Orizaba',     'Mexiko',          'Sierra Madre'],
+  ['Kosciuszko',          'Australien',      'Australische Alpen'],
+  ['Vesuvio',             'Italien',         'Apenninen'],
+  ['Popocatépetl',        'Mexiko',          'Sierra Nevada'],
+];
+
+function generateRiverQuestions() {
+  const questions = [];
+  const allContinents = [...new Set(RIVERS_DATA.map(([,, c]) => c))];
+  const allCountries  = RIVERS_DATA.map(([, country]) => country);
+
+  RIVERS_DATA.forEach(([river, country, continent]) => {
+    // Type 1: country → river
+    const wrongCountries = pickRandom(allCountries, country, 3);
+    const ans1 = shuffle([country, ...wrongCountries]);
+    questions.push({
+      text: `Durch welches Land fließt der Fluss ${river} hauptsächlich?`,
+      answers: ans1,
+      correct_index: ans1.indexOf(country),
+      difficulty: 'medium',
+    });
+
+    // Type 2: continent → river (which river is on this continent?)
+    const wrongContinents = pickRandom(allContinents, continent, 3);
+    const ans2 = shuffle([continent, ...wrongContinents]);
+    questions.push({
+      text: `Auf welchem Kontinent liegt der Fluss ${river}?`,
+      answers: ans2,
+      correct_index: ans2.indexOf(continent),
+      difficulty: 'easy',
+    });
+  });
+
+  return questions;
+}
+
+function generateMountainQuestions() {
+  const questions = [];
+  const allCountries = MOUNTAINS_DATA.map(([, c]) => c);
+  const allRanges    = MOUNTAINS_DATA.map(([,, r]) => r);
+
+  MOUNTAINS_DATA.forEach(([mountain, country, range]) => {
+    // Type 1: in which country?
+    const wrongCountries = pickRandom(allCountries, country, 3);
+    const ans1 = shuffle([country, ...wrongCountries]);
+    questions.push({
+      text: `In welchem Land befindet sich der Berg ${mountain}?`,
+      answers: ans1,
+      correct_index: ans1.indexOf(country),
+      difficulty: 'medium',
+    });
+
+    // Type 2: in which mountain range?
+    const wrongRanges = pickRandom(allRanges, range, 3);
+    const ans2 = shuffle([range, ...wrongRanges]);
+    questions.push({
+      text: `Zu welchem Gebirge gehört der Berg ${mountain}?`,
+      answers: ans2,
+      correct_index: ans2.indexOf(range),
+      difficulty: 'hard',
+    });
+  });
+
+  return questions;
+}
+
+/**
+ * Generate all geography questions: capitals + rivers + mountains.
+ * Returns ~440 diverse questions from 100% static data — zero API cost.
+ */
+function generateAllGeographyQuestions() {
+  return [
+    ...generateCapitalQuestions(),
+    ...generateRiverQuestions(),
+    ...generateMountainQuestions(),
+  ];
+}
+
+module.exports = {
+  generateAllGeographyQuestions,
+  CAPITALS_COUNT: CAPITALS_DATA.length,
+  RIVERS_COUNT:   RIVERS_DATA.length,
+  MOUNTAINS_COUNT: MOUNTAINS_DATA.length,
+};

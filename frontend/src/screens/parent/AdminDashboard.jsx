@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   const [saving, setSaving]   = useState(null);
   const [genStatus, setGenStatus] = useState(null);
   const [genLoading, setGenLoading] = useState(false);
+  const [poolStats, setPoolStats]   = useState(null);
 
   // Subject management state
   const [subjects,    setSubjects]    = useState([]);
@@ -42,6 +43,10 @@ export default function AdminDashboard() {
     };
     pollGen();
     const genInterval = setInterval(pollGen, 3000);
+
+    // Load pool stats once
+    api.get('/admin/gen/pool').then(r => setPoolStats(r.data)).catch(() => {});
+
     return () => clearInterval(genInterval);
   }, []);
 
@@ -157,8 +162,9 @@ export default function AdminDashboard() {
 
         {genStatus?.running && (
           <div className="px-4 py-3 bg-blue-50 border-b border-gray-100">
-            <p className="text-sm text-blue-800 font-medium mb-2">
-              ⚙️ {genStatus.currentSubject ?? '…'} — Klasse {genStatus.currentGrade ?? '…'}
+            <p className="text-sm text-blue-800 font-medium mb-1">
+              ⚙️ {genStatus.currentSubject ?? '…'}{genStatus.currentTopic ? ` — ${genStatus.currentTopic}` : ''}
+              <span className="ml-2 text-blue-500 font-normal">Klasse {genStatus.currentGrade ?? '…'}</span>
             </p>
             <div className="w-full bg-blue-200 rounded-full h-2">
               <div
@@ -166,15 +172,17 @@ export default function AdminDashboard() {
                 style={{ width: genStatus.progressTotal > 0 ? `${Math.round(genStatus.progressDone / genStatus.progressTotal * 100)}%` : '0%' }}
               />
             </div>
-            <p className="text-xs text-blue-600 mt-1">{genStatus.progressDone} / {genStatus.progressTotal} Fach-Klassen-Kombinationen</p>
+            <p className="text-xs text-blue-600 mt-1">{genStatus.progressDone} / {genStatus.progressTotal} Thema×Klassen-Kombinationen (Ziel: {genStatus.targetPerTopic} Fragen/Thema)</p>
           </div>
         )}
 
         <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard label={'Fragen generiert'} value={Number(genStatus?.lifetime?.total_questions ?? 0).toLocaleString('de-DE')} icon="❓" />
-          <StatCard label={'Input-Token'} value={Number(genStatus?.lifetime?.total_input_tokens ?? 0).toLocaleString('de-DE')} icon="📥" />
-          <StatCard label={'Output-Token'} value={Number(genStatus?.lifetime?.total_output_tokens ?? 0).toLocaleString('de-DE')} icon="📤" />
-          <StatCard label={'Gesamtkosten'} value={`$${Number(genStatus?.lifetime?.total_cost_usd ?? 0).toFixed(4)}`} icon="💵" color="text-amber-700" />
+          <StatCard label={'Fragen generiert'} value={Number(genStatus?.lifetime?.totalQuestions ?? 0).toLocaleString('de-DE')} icon="❓" />
+          <StatCard label={'Fragen in DB gesamt'}
+            value={poolStats ? poolStats.summary.reduce((s, r) => s + r.count, 0).toLocaleString('de-DE') : '…'}
+            icon="🗄️" color="text-blue-600" />
+          <StatCard label={'API-Kosten gesamt'} value={`$${Number(genStatus?.lifetime?.totalCostUsd ?? 0).toFixed(4)}`} icon="💵" color="text-amber-700" />
+          <StatCard label={'Ziel pro Thema'} value={`${genStatus?.targetPerTopic ?? 200} Fragen`} icon="🎯" color="text-purple-600" />
         </div>
       </div>
 

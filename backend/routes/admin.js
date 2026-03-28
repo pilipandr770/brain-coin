@@ -185,17 +185,10 @@ router.post('/gen/stop', auth, adminOnly, (_req, res) => {
   res.json({ stopped: true });
 });
 
-// GET /api/admin/gen/pool — question counts per subject+grade
+// GET /api/admin/gen/pool — question counts (summary + topic-level breakdown)
 router.get('/gen/pool', auth, adminOnly, async (_req, res) => {
   try {
-    const { rows } = await pool.query(
-      `SELECT s.name AS subject, s.slug, q.grade, COUNT(*)::int AS count
-       FROM questions q
-       JOIN subjects s ON s.id = q.subject_id
-       GROUP BY s.name, s.slug, q.grade
-       ORDER BY s.name, q.grade`
-    );
-    res.json(rows);
+    res.json(await genJob.getPoolStats());
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

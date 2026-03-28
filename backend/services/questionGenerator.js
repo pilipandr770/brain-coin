@@ -41,8 +41,9 @@ function shuffleAnswers(answers) {
  * @param {string} grade
  * @param {number} count
  * @param {object} contentSettings  parent-defined content filters
+ * @param {string|null} topic       curriculum topic — narrows prompt for more relevant questions
  */
-async function callClaude(subjectName, grade, count, contentSettings = {}) {
+async function callClaude(subjectName, grade, count, contentSettings = {}, topic = null) {
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error('ANTHROPIC_API_KEY is not set');
   }
@@ -61,6 +62,11 @@ async function callClaude(subjectName, grade, count, contentSettings = {}) {
     ? `\n\nEINSCHRÄNKUNGEN (unbedingt einhalten):\n${exclusions.map((e, i) => `${i + 1}. ${e}`).join('\n')}`
     : '';
 
+  // Topic focus block — narrows Claude to generate curriculum-specific questions
+  const topicBlock = topic
+    ? `\n\nTHEMA-FOKUS: "${topic}" — Erstelle ALLE ${count} Fragen ausschließlich zu diesem Thema. Die Fragen sollen den deutschen Lehrplan für dieses Thema in der ${grade}. Klasse abdecken und dabei Faktenwissen, Begriffsverständnis und Anwendung kombinieren.`
+    : '';
+
   const age = GRADE_AGE[grade] || 12;
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -76,7 +82,7 @@ ANFORDERUNGEN:
 - Abwechslungsreiche Themen aus dem deutschen Lehrplan der ${grade}. Klasse für "${subjectName}"
 - Klare und eindeutige Formulierungen, altersgerecht für ${age}-Jährige
 - Falsche Antworten sollen plausibel wirken (nicht absurd)
-- Schwierigkeitsverteilung: ca. 30 % easy, 50 % medium, 20 % hard${exclusionBlock}
+- Schwierigkeitsverteilung: ca. 30 % easy, 50 % medium, 20 % hard${exclusionBlock}${topicBlock}
 
 Gib NUR ein JSON-Array zurück, keinerlei weiterer Text. Jedes Element:
 {
@@ -122,12 +128,13 @@ WICHTIG: answers[0] ist IMMER die richtige Antwort. correct_index ist immer 0.`;
 
 /**
  * Insert generated questions into the DB.
- * @param {number} subjectId
- * @param {string} grade
- * @param {Array}  questions
+ * @param {number}      subjectId
+ * @param {string}      grade
+ * @param {Array}       questions
+ * @param {number|null} topicId   optional topic FK (null for auto-generated without topic)
  * @returns {Array} inserted rows
  */
-async function saveToDb(subjectId, grade, questions) {
+async function saveToDb(subjectId, grade, questions, topicId = null) {
   const inserted = [];
   for (const q of questions) {
     try {
@@ -135,10 +142,10 @@ async function saveToDb(subjectId, grade, questions) {
       // correct position is random in the DB — and we track it ourselves.
       const { answers, correctIndex } = shuffleAnswers(q.answers);
       const { rows } = await pool.query(
-        `INSERT INTO questions (subject_id, grade, text, answers, correct_index, difficulty)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO questions (subject_id, grade, text, answers, correct_index, difficulty, topic_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING *`,
-        [subjectId, grade, q.text.trim(), JSON.stringify(answers), correctIndex, q.difficulty]
+        [subjectId, grade, q.text.trim(), JSON.stringify(answers), correctIndex, q.difficulty, topicId]
       );
       inserted.push(rows[0]);
     } catch (err) {
@@ -182,7 +189,8 @@ async function ensureAndPickQuestions(subjectId, subjectName, grade, contentSett
       'SELECT COUNT(*)::int AS cnt FROM questions WHERE subject_id=$1 AND grade=$2',
       [subjectId, grade]
     );
-    if (geoCount[0].cnt < 50) {
+    // Re-seed whenever pool drops below expected total (capitals + rivers + mountains)
+    if (geoCount[0].cnt < 400) {
       const geoQuestions = generateAllGeographyQuestions();
       await saveToDb(subjectId, grade, geoQuestions);
       console.log(`[questionGenerator] Seeded ${geoQuestions.length} geography questions for grade ${grade}`);

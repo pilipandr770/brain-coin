@@ -10,7 +10,11 @@
 const { pool }           = require('../db');
 const { callClaude, saveToDb } = require('./questionGenerator');
 
-const MIN_POOL = 40;
+// How many questions to generate per topic+grade combination.
+// Raise this env var to expand the pool (e.g. 500 → ~262 500 questions).
+const TARGET_PER_TOPIC = parseInt(process.env.QUESTIONS_TARGET_PER_TOPIC || '200', 10);
+// Questions requested per single Claude API call (fits in one 8 192-token response)
+const BATCH_SIZE = 15;
 
 // Claude pricing (claude-opus-4-5)
 const COST_PER_INPUT_TOKEN  = 15  / 1_000_000; // $15 per 1M
@@ -20,10 +24,11 @@ const COST_PER_OUTPUT_TOKEN = 75  / 1_000_000; // $75 per 1M
 const state = {
   running:          false,
   currentSubject:   null,
+  currentTopic:     null,   // ← topic being processed right now
   currentGrade:     null,
   progressDone:     0,
   progressTotal:    0,
-  sessionGenerated: 0, // questions generated in current admin-triggered run
+  sessionGenerated: 0,
   startedAt:        null,
 };
 
@@ -63,18 +68,33 @@ async function logUsage(subjectId, grade, questionsCount, inputTokens, outputTok
 
 // ─── Main generation loop ─────────────────────────────────────────────────────
 async function runGeneration() {
-  // Get all subjects except math and geography (those use local generators)
-  const { rows: subjects } = await pool.query(
-    `SELECT id, name, slug, grades FROM subjects
-     WHERE slug NOT IN ('math', 'geography')
-     ORDER BY name`
+  // Load all curriculum topics (excludes math and geography — local generators)
+  const { rows: topicRows } = await pool.query(
+    `SELECT t.id AS topic_id, t.name_de AS topic_name,
+            s.id AS subject_id, s.name AS subject_name, s.grades
+     FROM subject_topics t
+     JOIN subjects s ON s.id = t.subject_id
+     WHERE s.slug NOT IN ('math', 'geography')
+     ORDER BY s.name, t.sort_order`
   );
+
+  if (topicRows.length === 0) {
+    console.warn('[genJob] No topics found in subject_topics table. Run migrate_topics.sql first.');
+    state.running = false;
+    return;
+  }
 
   const GRADES = ['4', '5', '6', '7', '8', '9'];
   const tasks = [];
-  for (const subj of subjects) {
-    for (const grade of (subj.grades || GRADES)) {
-      tasks.push({ subjectId: subj.id, subjectName: subj.name, grade });
+  for (const t of topicRows) {
+    for (const grade of (t.grades || GRADES)) {
+      tasks.push({
+        topicId:     t.topic_id,
+        topicName:   t.topic_name,
+        subjectId:   t.subject_id,
+        subjectName: t.subject_name,
+        grade,
+      });
     }
   }
 
@@ -82,43 +102,61 @@ async function runGeneration() {
   state.progressDone     = 0;
   state.sessionGenerated = 0;
 
+  console.log(`[genJob] Starting — ${tasks.length} topic×grade tasks, target ${TARGET_PER_TOPIC} q/topic`);
+
   for (const task of tasks) {
     if (!state.running) break;
 
     state.currentSubject = task.subjectName;
+    state.currentTopic   = task.topicName;
     state.currentGrade   = task.grade;
 
     try {
       const { rows: countRow } = await pool.query(
-        'SELECT COUNT(*)::int AS cnt FROM questions WHERE subject_id=$1 AND grade=$2',
-        [task.subjectId, task.grade]
+        'SELECT COUNT(*)::int AS cnt FROM questions WHERE topic_id=$1 AND grade=$2',
+        [task.topicId, task.grade]
       );
       const current = countRow[0].cnt;
 
-      if (current < MIN_POOL) {
-        const needed = MIN_POOL - current;
-        console.log(`[genJob] Generating ${needed} questions for ${task.subjectName} grade ${task.grade}…`);
+      // Fill this topic bucket up to TARGET_PER_TOPIC in batches of BATCH_SIZE
+      let remaining = TARGET_PER_TOPIC - current;
+      while (remaining > 0 && state.running) {
+        const batchSize = Math.min(remaining, BATCH_SIZE);
+        console.log(
+          `[genJob] ${task.subjectName} / ${task.topicName} grade ${task.grade}` +
+          ` — generating ${batchSize} (${current + state.sessionGenerated % 1} have, need ${remaining} more)…`
+        );
 
-        const { questions, inputTokens, outputTokens } = await callClaude(task.subjectName, task.grade, needed);
+        const { questions, inputTokens, outputTokens } =
+          await callClaude(task.subjectName, task.grade, batchSize, {}, task.topicName);
 
         if (questions.length > 0) {
-          const saved = await saveToDb(task.subjectId, task.grade, questions);
+          const saved = await saveToDb(task.subjectId, task.grade, questions, task.topicId);
           state.sessionGenerated += saved.length;
+          remaining -= saved.length;
           await logUsage(task.subjectId, task.grade, saved.length, inputTokens, outputTokens);
-          console.log(`[genJob] Saved ${saved.length} questions — input: ${inputTokens}, output: ${outputTokens}`);
+        } else {
+          break; // Claude returned nothing — move on
+        }
+
+        if (state.running && remaining > 0) {
+          await new Promise(r => setTimeout(r, 1500));
         }
       }
     } catch (err) {
-      console.error(`[genJob] Error for ${task.subjectName} grade ${task.grade}:`, err.message);
+      console.error(
+        `[genJob] Error for ${task.subjectName}/${task.topicName} grade ${task.grade}:`,
+        err.message
+      );
     }
 
     state.progressDone++;
-    // Brief pause between API calls to avoid rate limiting
     if (state.running) await new Promise(r => setTimeout(r, 1500));
   }
 
   state.running        = false;
   state.currentSubject = null;
+  state.currentTopic   = null;
   state.currentGrade   = null;
   await loadLifetimeStats();
   console.log(`[genJob] Finished. Total generated this session: ${state.sessionGenerated}`);
@@ -145,9 +183,11 @@ async function getStatus() {
   return {
     running:          state.running,
     currentSubject:   state.currentSubject,
+    currentTopic:     state.currentTopic,
     currentGrade:     state.currentGrade,
     progressDone:     state.progressDone,
     progressTotal:    state.progressTotal,
+    targetPerTopic:   TARGET_PER_TOPIC,
     sessionGenerated: state.sessionGenerated,
     startedAt:        state.startedAt,
     lifetime: {
@@ -161,16 +201,28 @@ async function getStatus() {
 
 async function getPoolStats() {
   try {
-    const { rows } = await pool.query(
-      `SELECT s.name AS subject, s.emoji, q.grade, COUNT(*)::int AS count
+    // Aggregate by subject + grade (summary view)
+    const { rows: summary } = await pool.query(
+      `SELECT s.name AS subject, s.emoji, s.slug, q.grade,
+              COUNT(*)::int AS count
        FROM questions q
        JOIN subjects s ON s.id = q.subject_id
-       GROUP BY s.id, s.name, s.emoji, q.grade
+       GROUP BY s.id, s.name, s.emoji, s.slug, q.grade
        ORDER BY s.name, q.grade`
     );
-    return rows;
+    // Topic-level breakdown for admin detail view
+    const { rows: topics } = await pool.query(
+      `SELECT s.name AS subject, s.slug, q.grade,
+              t.name_de AS topic, COUNT(*)::int AS count
+       FROM questions q
+       JOIN subjects s ON s.id = q.subject_id
+       LEFT JOIN subject_topics t ON t.id = q.topic_id
+       GROUP BY s.name, s.slug, q.grade, t.name_de
+       ORDER BY s.name, q.grade, t.name_de`
+    );
+    return { summary, topics, targetPerTopic: TARGET_PER_TOPIC };
   } catch {
-    return [];
+    return { summary: [], topics: [], targetPerTopic: TARGET_PER_TOPIC };
   }
 }
 
