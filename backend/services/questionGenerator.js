@@ -13,6 +13,8 @@
 
 const Anthropic = require('@anthropic-ai/sdk');
 const { pool }  = require('../db');
+const { generateMathQuestions }         = require('./mathGenerator');
+const { generateAllGeographyQuestions } = require('./geographyGenerator');
 
 const MIN_POOL = 40; // keep at least this many questions per subject+grade
 
@@ -101,7 +103,7 @@ WICHTIG: answers[0] ist IMMER die richtige Antwort. correct_index ist immer 0.`;
   const parsed = JSON.parse(match[0]);
 
   // Validate each item before returning
-  return parsed.filter((q) => {
+  const questions = parsed.filter((q) => {
     return (
       typeof q.text         === 'string' && q.text.trim() &&
       Array.isArray(q.answers) && q.answers.length === 4 &&
@@ -110,6 +112,12 @@ WICHTIG: answers[0] ist IMMER die richtige Antwort. correct_index ist immer 0.`;
       ['easy', 'medium', 'hard'].includes(q.difficulty)
     );
   });
+
+  return {
+    questions,
+    inputTokens:  message.usage.input_tokens,
+    outputTokens: message.usage.output_tokens,
+  };
 }
 
 /**
@@ -155,28 +163,61 @@ async function saveToDb(subjectId, grade, questions) {
  * @returns {Array} up to 10 question rows (with correct_index)
  */
 async function ensureAndPickQuestions(subjectId, subjectName, grade, contentSettings = {}, childId = null) {
-  // How many do we have?
-  const { rows: countRow } = await pool.query(
-    'SELECT COUNT(*)::int AS cnt FROM questions WHERE subject_id=$1 AND grade=$2',
-    [subjectId, grade]
+  // ── Resolve subject slug to intercept math / geography ──────────────────────
+  const { rows: slugRows } = await pool.query(
+    'SELECT slug FROM subjects WHERE id=$1',
+    [subjectId]
   );
-  const current = countRow[0].cnt;
+  const slug = slugRows[0]?.slug;
 
-  if (current < MIN_POOL && process.env.ANTHROPIC_API_KEY) {
-    const needed = MIN_POOL - current;
-    console.log(`[questionGenerator] Generating ${needed} questions for ${subjectName} grade ${grade}…`);
-    try {
-      const generated = await callClaude(subjectName, grade, needed, contentSettings);
-      if (generated.length > 0) {
-        await saveToDb(subjectId, grade, generated);
-        console.log(`[questionGenerator] Saved ${generated.length} new questions to DB`);
-      }
-    } catch (err) {
-      // Generation failed → fall back to whatever is in the DB (could be seed data)
-      console.error('[questionGenerator] Generation failed, using existing pool:', err.message);
+  // ── Math: always generate fresh questions, no pool needed ───────────────────
+  if (slug === 'math') {
+    const generated = generateMathQuestions(grade, 10);
+    return await saveToDb(subjectId, grade, generated);
+  }
+
+  // ── Geography: seed pool once from static capitals list, then pick normally ─
+  if (slug === 'geography') {
+    const { rows: geoCount } = await pool.query(
+      'SELECT COUNT(*)::int AS cnt FROM questions WHERE subject_id=$1 AND grade=$2',
+      [subjectId, grade]
+    );
+    if (geoCount[0].cnt < 50) {
+      const geoQuestions = generateAllGeographyQuestions();
+      await saveToDb(subjectId, grade, geoQuestions);
+      console.log(`[questionGenerator] Seeded ${geoQuestions.length} geography questions for grade ${grade}`);
     }
-  } else if (current < MIN_POOL) {
-    console.warn('[questionGenerator] ANTHROPIC_API_KEY not set — using seed questions only');
+    // Fall through to normal random pick below
+  } else {
+    // ── All other subjects: use Claude when pool is thin ─────────────────────────
+    const { rows: countRow } = await pool.query(
+      'SELECT COUNT(*)::int AS cnt FROM questions WHERE subject_id=$1 AND grade=$2',
+      [subjectId, grade]
+    );
+    const current = countRow[0].cnt;
+
+    if (current < MIN_POOL && process.env.ANTHROPIC_API_KEY) {
+      const needed = MIN_POOL - current;
+      console.log(`[questionGenerator] Generating ${needed} questions for ${subjectName} grade ${grade}…`);
+      try {
+        const { questions: generated, inputTokens, outputTokens } = await callClaude(subjectName, grade, needed, contentSettings);
+        if (generated.length > 0) {
+          await saveToDb(subjectId, grade, generated);
+          console.log(`[questionGenerator] Saved ${generated.length} new questions to DB`);
+          // Log token usage (non-fatal)
+          const costUsd = (inputTokens * 15 + outputTokens * 75) / 1_000_000;
+          pool.query(
+            `INSERT INTO api_gen_log (subject_id, grade, questions_generated, input_tokens, output_tokens, cost_usd, triggered_by)
+             VALUES ($1,$2,$3,$4,$5,$6,'auto')`,
+            [subjectId, grade, generated.length, inputTokens, outputTokens, costUsd]
+          ).catch(() => {});
+        }
+      } catch (err) {
+        console.error('[questionGenerator] Generation failed, using existing pool:', err.message);
+      }
+    } else if (current < MIN_POOL) {
+      console.warn('[questionGenerator] ANTHROPIC_API_KEY not set — using seed questions only');
+    }
   }
 
   // Pick 10 random questions — prefer ones not yet mastered by this child
@@ -217,4 +258,4 @@ async function ensureAndPickQuestions(subjectId, subjectName, grade, contentSett
   return rows;
 }
 
-module.exports = { ensureAndPickQuestions };
+module.exports = { ensureAndPickQuestions, callClaude, saveToDb };

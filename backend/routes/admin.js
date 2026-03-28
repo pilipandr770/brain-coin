@@ -9,6 +9,7 @@ const express = require('express');
 const router  = express.Router();
 const auth    = require('../middleware/auth');
 const { pool } = require('../db');
+const genJob   = require('../services/genJob');
 
 // ─── Admin guard middleware ────────────────────────────────────────────────
 async function adminOnly(req, res, next) {
@@ -158,6 +159,45 @@ router.delete('/subjects/:id', auth, adminOnly, async (req, res) => {
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+// ── AI Generation Control ────────────────────────────────────────────────────
+
+// GET /api/admin/gen/status — job state + lifetime cost stats
+router.get('/gen/status', auth, adminOnly, async (_req, res) => {
+  try {
+    res.json(await genJob.getStatus());
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/admin/gen/start — kick off background generation
+router.post('/gen/start', auth, adminOnly, (_req, res) => {
+  const started = genJob.startJob();
+  res.json({ started, alreadyRunning: !started });
+});
+
+// POST /api/admin/gen/stop — signal the job to stop after current task
+router.post('/gen/stop', auth, adminOnly, (_req, res) => {
+  genJob.stopJob();
+  res.json({ stopped: true });
+});
+
+// GET /api/admin/gen/pool — question counts per subject+grade
+router.get('/gen/pool', auth, adminOnly, async (_req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT s.name AS subject, s.slug, q.grade, COUNT(*)::int AS count
+       FROM questions q
+       JOIN subjects s ON s.id = q.subject_id
+       GROUP BY s.name, s.slug, q.grade
+       ORDER BY s.name, q.grade`
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

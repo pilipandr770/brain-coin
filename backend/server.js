@@ -66,7 +66,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // Auto-run DB migrations on every startup (all files are idempotent)
 async function runMigrations() {
-  const files = ['schema.sql', 'migrate_subscription.sql', 'seed.sql'];
+  const files = ['schema.sql', 'migrate_subscription.sql', 'seed.sql', 'migrate_gen.sql'];
   for (const file of files) {
     try {
       const sql = fs.readFileSync(path.join(__dirname, 'db', file), 'utf8');

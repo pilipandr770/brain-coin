@@ -14,6 +14,8 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch]   = useState('');
   const [saving, setSaving]   = useState(null);
+  const [genStatus, setGenStatus] = useState(null);
+  const [genLoading, setGenLoading] = useState(false);
 
   // Subject management state
   const [subjects,    setSubjects]    = useState([]);
@@ -33,20 +35,40 @@ export default function AdminDashboard() {
       setUsers(u.data);
       setSubjects(subj.data);
     }).finally(() => setLoading(false));
+
+    // Poll gen status every 3 s
+    const pollGen = async () => {
+      try { const { data } = await api.get('/admin/gen/status'); setGenStatus(data); } catch {}
+    };
+    pollGen();
+    const genInterval = setInterval(pollGen, 3000);
+    return () => clearInterval(genInterval);
   }, []);
 
   const updateSubscription = async (userId, newStatus) => {
     setSaving(userId);
     try {
-      await api.patch(`/admin/users/${userId}/subscription`, { subscription_status: newStatus });
+      await api.patch(`/admin/users/${userId}/subscription`, { sub_status: newStatus });
       setUsers((prev) =>
-        prev.map((u) => u.id === userId ? { ...u, subscription_status: newStatus } : u)
+        prev.map((u) => u.id === userId ? { ...u, sub_status: newStatus } : u)
       );
     } catch {
       alert('Failed to update subscription');
     } finally {
       setSaving(null);
     }
+  };
+
+  const startGen = async () => {
+    setGenLoading(true);
+    try { await api.post('/admin/gen/start'); } catch { alert('Fehler beim Starten'); }
+    finally { setGenLoading(false); }
+  };
+
+  const stopGen = async () => {
+    setGenLoading(true);
+    try { await api.post('/admin/gen/stop'); } catch { alert('Fehler beim Stoppen'); }
+    finally { setGenLoading(false); }
   };
 
   const addSubject = async () => {
@@ -115,6 +137,46 @@ export default function AdminDashboard() {
           <StatCard label={'Gesch. MRR'} value={`€${stats.estimated_mrr_eur}`} icon="💰" color="text-purple-600" />
         </div>
       )}
+
+      {/* ── AI Question Generation ── */}
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-6">
+        <div className="p-4 border-b border-gray-100 flex items-center gap-3">
+          <h2 className="font-semibold text-gray-800 flex-1">🤖 {'KI-Fragengenerierung'}</h2>
+          <button
+            onClick={genStatus?.running ? stopGen : startGen}
+            disabled={genLoading}
+            className={`text-sm px-4 py-1.5 rounded-lg font-bold transition disabled:opacity-50 ${
+              genStatus?.running
+                ? 'bg-red-600 hover:bg-red-500 text-white'
+                : 'bg-green-600 hover:bg-green-500 text-white'
+            }`}
+          >
+            {genLoading ? '⏳' : genStatus?.running ? '⏹ Stop' : '▶ Start'}
+          </button>
+        </div>
+
+        {genStatus?.running && (
+          <div className="px-4 py-3 bg-blue-50 border-b border-gray-100">
+            <p className="text-sm text-blue-800 font-medium mb-2">
+              ⚙️ {genStatus.currentSubject ?? '…'} — Klasse {genStatus.currentGrade ?? '…'}
+            </p>
+            <div className="w-full bg-blue-200 rounded-full h-2">
+              <div
+                className="bg-blue-600 h-2 rounded-full transition-all"
+                style={{ width: genStatus.progressTotal > 0 ? `${Math.round(genStatus.progressDone / genStatus.progressTotal * 100)}%` : '0%' }}
+              />
+            </div>
+            <p className="text-xs text-blue-600 mt-1">{genStatus.progressDone} / {genStatus.progressTotal} Fach-Klassen-Kombinationen</p>
+          </div>
+        )}
+
+        <div className="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <StatCard label={'Fragen generiert'} value={Number(genStatus?.lifetime?.total_questions ?? 0).toLocaleString('de-DE')} icon="❓" />
+          <StatCard label={'Input-Token'} value={Number(genStatus?.lifetime?.total_input_tokens ?? 0).toLocaleString('de-DE')} icon="📥" />
+          <StatCard label={'Output-Token'} value={Number(genStatus?.lifetime?.total_output_tokens ?? 0).toLocaleString('de-DE')} icon="📤" />
+          <StatCard label={'Gesamtkosten'} value={`$${Number(genStatus?.lifetime?.total_cost_usd ?? 0).toFixed(4)}`} icon="💵" color="text-amber-700" />
+        </div>
+      </div>
 
       {/* ── Subject management ── */}
       <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-6">
@@ -244,8 +306,8 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-4 py-3">
                       {u.role === 'parent' ? (
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[u.subscription_status] ?? statusColors.none}`}>
-                          {u.subscription_status || 'none'}
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[u.sub_status] ?? statusColors.none}`}>
+                          {u.sub_status || 'none'}
                         </span>
                       ) : (
                         <span className="text-gray-300 text-xs">—</span>
@@ -256,13 +318,13 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 flex-wrap">
-                        {u.role === 'parent' && u.subscription_status !== 'active' && (
+                        {u.role === 'parent' && u.sub_status !== 'active' && (
                           <button onClick={() => updateSubscription(u.id, 'active')} disabled={saving === u.id}
                             className="text-xs px-2 py-1 bg-green-50 hover:bg-green-100 text-green-700 rounded-lg disabled:opacity-50">
                             Activate
                           </button>
                         )}
-                        {u.role === 'parent' && u.subscription_status === 'active' && (
+                        {u.role === 'parent' && u.sub_status === 'active' && (
                           <button onClick={() => updateSubscription(u.id, 'canceled')} disabled={saving === u.id}
                             className="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg disabled:opacity-50">
                             Cancel
