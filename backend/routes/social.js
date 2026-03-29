@@ -261,7 +261,7 @@ router.get('/challenges/:id/questions', auth, async (req, res) => {
 
     const ids = ch.question_ids; // already parsed by pg JSONB
     const { rows } = await pool.query(
-      'SELECT id, question_text, options, correct_answer, explanation FROM questions WHERE id = ANY($1)',
+      'SELECT id, text AS question_text, answers AS options, correct_index AS correct_answer FROM questions WHERE id = ANY($1)',
       [ids]
     );
     // Return in the order stored in question_ids
