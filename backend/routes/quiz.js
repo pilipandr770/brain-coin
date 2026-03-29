@@ -79,9 +79,10 @@ router.post('/sessions/:id/answer', auth, async (req, res) => {
 
   try {
     const { rows: sr } = await pool.query(
-      `SELECT qs.*, c.points_per_correct, c.penalty_per_wrong, c.id AS cid
+      `SELECT qs.*, COALESCE(c.points_per_correct, 5) AS points_per_correct,
+              COALESCE(c.penalty_per_wrong, 0) AS penalty_per_wrong, c.id AS cid
        FROM quiz_sessions qs
-       JOIN contracts c ON c.id = qs.contract_id
+       LEFT JOIN contracts c ON c.id = qs.contract_id
        WHERE qs.id=$1 AND qs.child_id=$2 AND qs.completed_at IS NULL`,
       [req.params.id, req.user.id]
     );
