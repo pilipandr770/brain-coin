@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
   if (password.length < 6)
     return res.status(400).json({ error: 'Password must be at least 6 characters' });
 
-  const lang = ['uk', 'en', 'de'].includes(ui_language) ? ui_language : 'de';
+  const lang = 'de';
 
   try {
     const exists = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
@@ -86,7 +86,7 @@ router.get('/me', auth, async (req, res) => {
 // ── Update UI language ────────────────────────────────────────────────────────
 router.patch('/me/language', auth, async (req, res) => {
   const { ui_language } = req.body;
-  if (!['uk', 'en', 'de'].includes(ui_language))
+  if (ui_language !== 'de')
     return res.status(400).json({ error: 'Invalid language code' });
   try {
     await pool.query('UPDATE users SET ui_language = $1 WHERE id = $2', [ui_language, req.user.id]);

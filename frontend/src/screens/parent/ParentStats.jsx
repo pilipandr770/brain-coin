@@ -18,7 +18,7 @@ function StatCard({ icon, label, value, color }) {
 }
 
 function SubjectRow({ subject, lang }) {
-  const name = lang === 'de' ? subject.name_de : lang === 'en' ? subject.name_en : subject.subject_name;
+  const name = subject.name_de || subject.subject_name;
   const total = subject.correct + subject.wrong;
   const pct = total > 0 ? Math.round((subject.correct / total) * 100) : 0;
   const barColor = pct >= 70 ? 'bg-green-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-500';

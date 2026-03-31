@@ -1,12 +1,12 @@
 {
   "expo": {
     "name": "BrainCoin",
-    "slug": "braincoin",
+    "slug": "brain-coin",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.braincoin.app"
+      "bundleIdentifier": "com.braincoin.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.braincoin.app",
@@ -27,16 +30,29 @@
     },
     "extra": {
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "4fd52a6d-6385-4bed-8fc3-3e55e6b06dc7"
       }
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0",
+            "gradleVersion": "8.7",
+            "kotlinVersion": "1.9.25"
+          }
+        }
+      ]
     ],
     "web": {
       "bundler": "metro",
       "output": "single",
       "name": "BrainCoin"
-    }
+    },
+    "owner": "andriipylypchuks-organization"
   }
 }

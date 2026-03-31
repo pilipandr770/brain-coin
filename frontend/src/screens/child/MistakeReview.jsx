@@ -84,8 +84,7 @@ export default function MistakeReview() {
   const grouped = mistakes.reduce((acc, q) => {
     const key = q.subject_id;
     if (!acc[key]) {
-      const lang = 'de-DE';
-      const name = lang === 'de' ? q.name_de : lang === 'en' ? q.name_en : q.subject_name;
+      const name = q.name_de || q.subject_name;
       acc[key] = { subjectName: name || q.subject_name, subjectEmoji: q.subject_emoji, questions: [] };
     }
     acc[key].questions.push(q);
