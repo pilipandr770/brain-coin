@@ -25,6 +25,12 @@ export default function AdminDashboard() {
   const [subjSaving,  setSubjSaving]  = useState(false);
   const [subjError,   setSubjError]   = useState('');
 
+  // Topic management state
+  const [expandedSubj, setExpandedSubj] = useState(null); // subject id with open topics panel
+  const [topicsMap,    setTopicsMap]    = useState({}); // { subjectId: [topics] }
+  const [newTopicName, setNewTopicName] = useState('');
+  const [topicSaving,  setTopicSaving]  = useState(false);
+
   useEffect(() => {
     if (user?.role !== 'admin') { navigate('/'); return; }
     Promise.all([
@@ -90,6 +96,39 @@ export default function AdminDashboard() {
       setSubjError(err.response?.data?.error || 'Fehler');
     } finally {
       setSubjSaving(false);
+    }
+  };
+
+  const toggleTopics = async (subjId) => {
+    if (expandedSubj === subjId) { setExpandedSubj(null); return; }
+    setExpandedSubj(subjId);
+    setNewTopicName('');
+    if (!topicsMap[subjId]) {
+      try {
+        const { data } = await api.get(`/admin/subjects/${subjId}/topics`);
+        setTopicsMap(prev => ({ ...prev, [subjId]: data }));
+      } catch { setTopicsMap(prev => ({ ...prev, [subjId]: [] })); }
+    }
+  };
+
+  const addTopic = async (subjId) => {
+    if (!newTopicName.trim()) return;
+    setTopicSaving(true);
+    try {
+      const { data } = await api.post(`/admin/subjects/${subjId}/topics`, { name_de: newTopicName.trim(), sort_order: (topicsMap[subjId]?.length || 0) + 1 });
+      setTopicsMap(prev => ({ ...prev, [subjId]: [...(prev[subjId] || []), data] }));
+      setNewTopicName('');
+    } catch (err) {
+      alert(err.response?.data?.error || 'Fehler');
+    } finally { setTopicSaving(false); }
+  };
+
+  const deleteTopic = async (subjId, topicId) => {
+    try {
+      await api.delete(`/admin/topics/${topicId}`);
+      setTopicsMap(prev => ({ ...prev, [subjId]: prev[subjId].filter(t => t.id !== topicId) }));
+    } catch (err) {
+      alert(err.response?.data?.error || 'Fehler');
     }
   };
 
@@ -203,23 +242,64 @@ export default function AdminDashboard() {
         {subjTab === 'list' ? (
           <div className="divide-y divide-gray-100">
             {subjects.map(s => (
-              <div key={s.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
-                <span className="text-2xl">{s.emoji}</span>
-                <div className="flex-1">
-                  <span className="font-medium text-gray-900">{s.name}</span>
-                  <span className="ml-2 text-xs text-gray-400">{s.slug}</span>
-                  <div className="flex gap-1 mt-0.5">
-                    {(s.grades || []).map(g => (
-                      <span key={g} className="text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">{g}.</span>
-                    ))}
+              <div key={s.id}>
+                <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50">
+                  <span className="text-2xl">{s.emoji}</span>
+                  <div className="flex-1">
+                    <span className="font-medium text-gray-900">{s.name}</span>
+                    <span className="ml-2 text-xs text-gray-400">{s.slug}</span>
+                    <div className="flex gap-1 mt-0.5">
+                      {(s.grades || []).map(g => (
+                        <span key={g} className="text-xs bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">{g}.</span>
+                      ))}
+                    </div>
                   </div>
+                  <button
+                    onClick={() => toggleTopics(s.id)}
+                    className={`text-xs px-2 py-1 rounded-lg mr-1 transition ${
+                      expandedSubj === s.id ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 hover:bg-indigo-50 text-gray-600'
+                    }`}
+                  >
+                    {expandedSubj === s.id ? '▲ Themen' : '▼ Themen'}
+                  </button>
+                  <button
+                    onClick={() => deleteSubject(s.id, s.name)}
+                    className="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg"
+                  >
+                    🗑
+                  </button>
                 </div>
-                <button
-                  onClick={() => deleteSubject(s.id, s.name)}
-                  className="text-xs px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg"
-                >
-                  🗑
-                </button>
+
+                {expandedSubj === s.id && (
+                  <div className="bg-indigo-50 border-t border-indigo-100 px-6 py-3">
+                    <p className="text-xs font-bold text-indigo-700 mb-2">Themen für KI-Generierung</p>
+                    <div className="space-y-1 mb-3">
+                      {(topicsMap[s.id] || []).length === 0 && (
+                        <p className="text-xs text-gray-400 italic">Keine Themen — genJob überspringt dieses Fach</p>
+                      )}
+                      {(topicsMap[s.id] || []).map(t => (
+                        <div key={t.id} className="flex items-center gap-2 bg-white rounded-lg px-3 py-1.5">
+                          <span className="flex-1 text-sm text-gray-800">{t.name_de}</span>
+                          <button onClick={() => deleteTopic(s.id, t.id)}
+                            className="text-xs text-red-400 hover:text-red-600">×</button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        value={newTopicName}
+                        onChange={e => setNewTopicName(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && addTopic(s.id)}
+                        placeholder="Neues Thema (z. B. Vokabular: Alltag)"
+                        className="flex-1 border border-indigo-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      />
+                      <button onClick={() => addTopic(s.id)} disabled={topicSaving || !newTopicName.trim()}
+                        className="text-sm px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-lg font-bold">
+                        {topicSaving ? '⏳' : '+'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

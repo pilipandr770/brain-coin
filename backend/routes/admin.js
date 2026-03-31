@@ -162,6 +162,54 @@ router.delete('/subjects/:id', auth, adminOnly, async (req, res) => {
   }
 });
 
+// ── Topic management ─────────────────────────────────────────────────────────
+
+// GET /api/admin/subjects/:id/topics
+router.get('/subjects/:id/topics', auth, adminOnly, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT * FROM subject_topics WHERE subject_id=$1 ORDER BY sort_order, name_de',
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch {
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+// POST /api/admin/subjects/:id/topics — add topic
+router.post('/subjects/:id/topics', auth, adminOnly, async (req, res) => {
+  const { name_de, sort_order } = req.body;
+  if (!name_de) return res.status(400).json({ error: 'name_de erforderlich' });
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO subject_topics (subject_id, name_de, sort_order)
+       VALUES ($1, $2, $3) RETURNING *`,
+      [req.params.id, name_de.trim(), sort_order || 0]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    if (err.code === '23505') return res.status(409).json({ error: 'Thema existiert bereits' });
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
+// DELETE /api/admin/topics/:topicId — delete topic (only if no questions)
+router.delete('/topics/:topicId', auth, adminOnly, async (req, res) => {
+  try {
+    const { rows: check } = await pool.query(
+      'SELECT COUNT(*)::int AS cnt FROM questions WHERE topic_id=$1',
+      [req.params.topicId]
+    );
+    if (check[0].cnt > 0)
+      return res.status(409).json({ error: `Hat noch ${check[0].cnt} Fragen` });
+    await pool.query('DELETE FROM subject_topics WHERE id=$1', [req.params.topicId]);
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
 // ── AI Generation Control ────────────────────────────────────────────────────
 
 // GET /api/admin/gen/status — job state + lifetime cost stats
