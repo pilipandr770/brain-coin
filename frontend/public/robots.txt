@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /parent/
+Disallow: /child/
+Disallow: /api/
+
+# Google
+User-agent: Googlebot
+Allow: /
+Disallow: /parent/
+Disallow: /child/
+Disallow: /api/
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Disallow: /parent/
+Disallow: /child/
+Disallow: /api/
+
+Sitemap: https://brain-coin.onrender.com/sitemap.xml

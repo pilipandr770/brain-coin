@@ -21,7 +21,7 @@
     },
     "android": {
       "package": "com.braincoin.app",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1d4ed8"

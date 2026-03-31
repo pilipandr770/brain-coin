@@ -44,6 +44,8 @@ router.get('/friends', auth, async (req, res) => {
 
 // ── Send friend request ───────────────────────────────────────────────────────
 router.post('/friends/request', auth, async (req, res) => {
+  if (req.user.role !== 'child')
+    return res.status(403).json({ error: 'Nur Kinder können Freunde hinzufügen' });
   const { addressee_id } = req.body;
   if (!addressee_id || addressee_id === req.user.id)
     return res.status(400).json({ error: 'Ungültige Anfrage' });

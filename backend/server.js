@@ -1,11 +1,18 @@
 require('dotenv').config();
-const express = require('express');
-const cors    = require('cors');
-const path    = require('path');
-const fs      = require('fs');
-const { pool } = require('./db');
+const express   = require('express');
+const cors      = require('cors');
+const helmet    = require('helmet');
+const rateLimit = require('express-rate-limit');
+const path      = require('path');
+const fs        = require('fs');
+const { pool }  = require('./db');
 
 const app = express();
+
+// ── Security headers (OWASP A05) ─────────────────────────────────────────────
+// CSP disabled — Vite produces hashed filenames, nonce-based CSP would need
+// server-side rendering. All other headers (HSTS, X-Frame-Options, etc.) active.
+app.use(helmet({ contentSecurityPolicy: false }));
 
 const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
   .split(',')
@@ -13,16 +20,41 @@ const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // non-browser / same-origin requests
+    if (!origin) return callback(null, true); // mobile app / same-origin
     if (allowedOrigins.includes(origin)) return callback(null, true);
-    // In production also allow any *.onrender.com subdomain (covers service URL)
-    if (process.env.NODE_ENV === 'production' && /\.onrender\.com$/.test(origin)) {
-      return callback(null, true);
-    }
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
 }));
+
+// ── Rate limiting (OWASP A07) ─────────────────────────────────────────────────
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10,
+  message: { error: 'Zu viele Anmeldeversuche. Bitte warte 15 Minuten.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { error: 'Zu viele Registrierungen. Bitte versuche es in einer Stunde erneut.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+const inviteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Zu viele Versuche. Bitte warte 15 Minuten.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api/auth/login',          loginLimiter);
+app.use('/api/auth/register',       registerLimiter);
+app.use('/api/auth/invite/accept',  inviteLimiter);
 
 // Production: serve the built React app from backend/public/
 // Must be BEFORE API routes so assets are served directly without going

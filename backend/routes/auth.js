@@ -13,14 +13,21 @@ const sign = (user) =>
   );
 
 // ── Register ──────────────────────────────────────────────────────────────────
+const EMAIL_REGEX = /^[^\s@]{1,64}@[^\s@]+\.[^\s@]{2,}$/;
+
 router.post('/register', async (req, res) => {
   const { name, email, password, role, age, grade, ui_language } = req.body;
   if (!name || !email || !password || !role)
     return res.status(400).json({ error: 'Fill in all required fields' });
   if (!['parent', 'child'].includes(role))
     return res.status(400).json({ error: 'Invalid role' });
-  if (password.length < 6)
-    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  const trimmedName = String(name).trim();
+  if (trimmedName.length < 2 || trimmedName.length > 50)
+    return res.status(400).json({ error: 'Name muss 2–50 Zeichen haben' });
+  if (!EMAIL_REGEX.test(String(email)))
+    return res.status(400).json({ error: 'Ungültige E-Mail-Adresse' });
+  if (password.length < 8)
+    return res.status(400).json({ error: 'Passwort muss mindestens 8 Zeichen haben' });
 
   const lang = 'de';
 
@@ -34,7 +41,7 @@ router.post('/register', async (req, res) => {
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, name, email, role, age, grade, ui_language, total_coins, avatar_emoji,
                  content_settings, sub_status, sub_current_period_end`,
-      [name.trim(), email.toLowerCase(), hash, role, age || null, grade || null, lang]
+      [trimmedName, email.toLowerCase().trim(), hash, role, age || null, grade || null, lang]
     );
     const user = rows[0];
     res.status(201).json({ token: sign(user), user });
@@ -99,7 +106,8 @@ router.patch('/me/language', auth, async (req, res) => {
 // ── Update avatar emoji ───────────────────────────────────────────────────────
 router.patch('/me/avatar', auth, async (req, res) => {
   const { avatar_emoji } = req.body;
-  if (!avatar_emoji) return res.status(400).json({ error: 'Provide emoji' });
+  if (!avatar_emoji || typeof avatar_emoji !== 'string' || avatar_emoji.length > 10)
+    return res.status(400).json({ error: 'Ungültiges Emoji' });
   try {
     await pool.query('UPDATE users SET avatar_emoji = $1 WHERE id = $2', [avatar_emoji, req.user.id]);
     res.json({ avatar_emoji });

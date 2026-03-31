@@ -1,0 +1,38 @@
+# BrainCoin
+
+> Motivierende Lern-App für Kinder ab der 4. Klasse — Mathe, Deutsch, Geografie und mehr lernen und echte Belohnungen verdienen.
+
+BrainCoin ist eine deutschsprachige Bildungs-App, die Kinder durch ein Belohnungssystem (BrainCoins) motiviert, Schulaufgaben zu lösen. Eltern erstellen Lernverträge und setzen Ziele; Kinder lösen Quizfragen und verdienen Münzen, die gegen echte Preise eingetauscht werden können.
+
+## App herunterladen
+
+- [Android App (Google Play)](https://play.google.com/store/apps/details?id=com.braincoin.app): BrainCoin im Play Store
+
+## Web-Portal
+
+- [Startseite](https://brain-coin.onrender.com/): Übersicht über BrainCoin
+- [Registrieren](https://brain-coin.onrender.com/register): Kostenloses Konto erstellen (3 Tage kostenlos testen)
+- [Anmelden](https://brain-coin.onrender.com/login): Bestehendes Konto
+
+## Rechtliches
+
+- [Impressum](https://brain-coin.onrender.com/impressum): Betreiberinformationen
+- [Datenschutz](https://brain-coin.onrender.com/datenschutz): Datenschutzerklärung (DSGVO-konform)
+- [AGB](https://brain-coin.onrender.com/agb): Allgemeine Geschäftsbedingungen
+
+## Funktionen
+
+- Fächer: Mathematik, Deutsch, Geografie, Geschichte, Englisch, Naturwissenschaften
+- Klassen: 4. bis 9. Klasse (Grundschule und Mittelschule)
+- Lernverträge zwischen Eltern und Kindern
+- Echtzeit-Leaderboard und Freundesliste
+- Fehlerreview nach jedem Quiz
+- Inhaltsfilter (kein Gewalt, kein Politik) einstellbar durch Eltern
+- Abonnement: 5 €/Monat für Eltern, Kinder kostenlos
+
+## Technologie
+
+- Plattform: Android (React Native / Expo), Web (React)
+- Backend: Node.js auf Render.com
+- Datenbank: PostgreSQL
+- KI-generierte Quizfragen via Claude (Anthropic)
