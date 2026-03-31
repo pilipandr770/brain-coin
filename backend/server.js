@@ -10,10 +10,29 @@ const { pool }  = require('./db');
 const app = express();
 
 // ── Security headers (OWASP A05) ─────────────────────────────────────────────
-// CSP disabled — Vite produces hashed filenames, nonce-based CSP would need
-// server-side rendering. All other headers (HSTS, X-Frame-Options, etc.) active.
 app.use(helmet({ contentSecurityPolicy: false }));
 
+// ── Serve static files FIRST — before CORS, before everything ────────────────
+// Static assets are public; CORS must not block them.
+if (process.env.NODE_ENV === 'production') {
+  const publicDir = path.join(__dirname, 'public');
+  const publicExists = fs.existsSync(publicDir);
+  console.log(`Static dir ${publicDir}: ${publicExists ? 'OK' : 'NOT FOUND'}`);
+  if (publicExists) {
+    app.use(express.static(publicDir, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('index.html')) {
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+        } else if (/\.(js|css|woff2?|ttf|eot|png|jpg|jpeg|gif|svg|ico|webp)$/.test(filePath)) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      },
+    }));
+  }
+}
+
+// ── CORS — applied only to /api routes (frontend is same-origin) ──────────────
 const allowedOrigins = new Set(
   [
     process.env.CORS_ORIGIN   || '',
@@ -26,14 +45,18 @@ const allowedOrigins = new Set(
   .filter(Boolean)
 );
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true); // mobile app / same-origin requests
     if (allowedOrigins.has(origin)) return callback(null, true);
+    // Log but don't crash — helps debug without breaking static assets
+    console.warn(`CORS blocked origin: ${origin}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-}));
+};
+
+app.use('/api', cors(corsOptions));
 
 // ── Rate limiting (OWASP A07) ─────────────────────────────────────────────────
 const loginLimiter = rateLimit({
@@ -63,29 +86,6 @@ const inviteLimiter = rateLimit({
 app.use('/api/auth/login',          loginLimiter);
 app.use('/api/auth/register',       registerLimiter);
 app.use('/api/auth/invite/accept',  inviteLimiter);
-
-// Production: serve the built React app from backend/public/
-// Must be BEFORE API routes so assets are served directly without going
-// through Express JSON / auth middleware.
-if (process.env.NODE_ENV === 'production') {
-  const publicDir = path.join(__dirname, 'public');
-  const publicExists = fs.existsSync(publicDir);
-  console.log(`Static dir ${publicDir}: ${publicExists ? 'OK' : 'NOT FOUND'}`);
-  if (publicExists) {
-    app.use(express.static(publicDir, {
-      setHeaders: (res, filePath) => {
-        if (filePath.endsWith('index.html')) {
-          // index.html must never be cached — new deploys change asset hashes
-          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-          res.setHeader('Pragma', 'no-cache');
-        } else if (/\.(js|css|woff2?|ttf|eot|png|jpg|jpeg|gif|svg|ico|webp)$/.test(filePath)) {
-          // Vite hashed assets can be cached indefinitely
-          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-        }
-      },
-    }));
-  }
-}
 
 // Stripe webhook needs raw body — must be mounted BEFORE express.json()
 app.use('/api/payments/webhook', require('./routes/payments'));
