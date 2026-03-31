@@ -8,6 +8,15 @@
 
 SET search_path TO braincoin;
 
+-- Remove quiz answers referencing these questions first (FK constraint)
+DELETE FROM quiz_answers
+WHERE question_id IN (
+  SELECT id FROM questions
+  WHERE subject_id IN (
+    SELECT id FROM subjects WHERE slug IN ('math', 'geography')
+  )
+);
+
 DELETE FROM questions
 WHERE subject_id IN (
   SELECT id FROM subjects WHERE slug IN ('math', 'geography')

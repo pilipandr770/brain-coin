@@ -14,14 +14,22 @@ const app = express();
 // server-side rendering. All other headers (HSTS, X-Frame-Options, etc.) active.
 app.use(helmet({ contentSecurityPolicy: false }));
 
-const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
-  .split(',')
-  .map(o => o.trim());
+const allowedOrigins = new Set(
+  [
+    process.env.CORS_ORIGIN   || '',
+    process.env.FRONTEND_URL  || '',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ]
+  .flatMap(o => o.split(','))
+  .map(o => o.trim())
+  .filter(Boolean)
+);
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // mobile app / same-origin
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin) return callback(null, true); // mobile app / same-origin requests
+    if (allowedOrigins.has(origin)) return callback(null, true);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
