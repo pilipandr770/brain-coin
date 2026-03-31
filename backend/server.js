@@ -63,7 +63,20 @@ if (process.env.NODE_ENV === 'production') {
   const publicDir = path.join(__dirname, 'public');
   const publicExists = fs.existsSync(publicDir);
   console.log(`Static dir ${publicDir}: ${publicExists ? 'OK' : 'NOT FOUND'}`);
-  if (publicExists) app.use(express.static(publicDir));
+  if (publicExists) {
+    app.use(express.static(publicDir, {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('index.html')) {
+          // index.html must never be cached — new deploys change asset hashes
+          res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+          res.setHeader('Pragma', 'no-cache');
+        } else if (/\.(js|css|woff2?|ttf|eot|png|jpg|jpeg|gif|svg|ico|webp)$/.test(filePath)) {
+          // Vite hashed assets can be cached indefinitely
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+      },
+    }));
+  }
 }
 
 // Stripe webhook needs raw body — must be mounted BEFORE express.json()
@@ -92,6 +105,8 @@ app.get('/api/health', async (_req, res) => {
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (_req, res, next) => {
     const f = path.join(__dirname, 'public', 'index.html');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
     res.sendFile(f, err => { if (err) next(err); });
   });
 }
