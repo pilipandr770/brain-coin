@@ -35,8 +35,10 @@ if (process.env.NODE_ENV === 'production') {
 // ── CORS — applied only to /api routes (frontend is same-origin) ──────────────
 const allowedOrigins = new Set(
   [
-    process.env.CORS_ORIGIN   || '',
-    process.env.FRONTEND_URL  || '',
+    process.env.CORS_ORIGIN        || '',
+    process.env.FRONTEND_URL       || '',
+    process.env.RENDER_EXTERNAL_URL || '',
+    'https://brain-coin.onrender.com',
     'http://localhost:5173',
     'http://localhost:3000',
   ]
