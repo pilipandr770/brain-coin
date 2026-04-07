@@ -3,6 +3,7 @@ import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, RefreshControl, Alert, Platform,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
@@ -117,6 +118,12 @@ export default function ParentDashboard({ navigation }) {
               <View style={styles.coinsChip}>
                 <Text style={styles.coinsTxt}>🪙 {child.total_coins}</Text>
               </View>
+              <TouchableOpacity
+                style={styles.settingsBtn}
+                onPress={() => navigation.navigate('ContentSettings', { childId: child.id, childName: child.name })}
+              >
+                <Ionicons name="settings-outline" size={18} color="#64748b" />
+              </TouchableOpacity>
             </TouchableOpacity>
           ))
         )}
@@ -207,8 +214,12 @@ const styles = StyleSheet.create({
   childGrade:   { fontSize: 13, color: '#64748b', marginTop: 2 },
   coinsChip:    {
     backgroundColor: '#fef3c7', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4,
+    marginRight: 8,
   },
   coinsTxt:     { fontSize: 14, fontWeight: '700', color: '#92400e' },
+  settingsBtn:  {
+    padding: 6, borderRadius: 20, backgroundColor: '#f1f5f9',
+  },
   contractCard: {
     backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 10,
     elevation: 2, boxShadow: '0 1px 4px rgba(0,0,0,0.06)',

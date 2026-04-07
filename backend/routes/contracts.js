@@ -44,6 +44,26 @@ router.post('/', auth, async (req, res) => {
     target_coins,
   } = req.body;
 
+  // ── Input validation ────────────────────────────────────────────────────────
+  const ppc = parseInt(points_per_correct) || 5;
+  const ppw = parseInt(penalty_per_wrong)  || 0;
+  const tpq = parseInt(time_per_question)  || 30;
+  const pc  = parseInt(prize_coins)        || 100;
+
+  if (!title || String(title).trim().length < 2 || String(title).trim().length > 200)
+    return res.status(400).json({ error: 'Titel muss 2–200 Zeichen haben' });
+  if (!prize_name || String(prize_name).trim().length < 1)
+    return res.status(400).json({ error: 'Belohnungsname ist erforderlich' });
+  if (ppc < 1 || ppc > 20)
+    return res.status(400).json({ error: 'Punkte pro richtiger Antwort: 1–20' });
+  if (ppw < 0 || ppw > 10)
+    return res.status(400).json({ error: 'Abzug pro Fehler: 0–10' });
+  if (tpq < 5 || tpq > 120)
+    return res.status(400).json({ error: 'Zeit pro Frage: 5–120 Sekunden' });
+  if (pc < 10 || pc > 10000)
+    return res.status(400).json({ error: 'Benötigte Münzen: 10–10000' });
+  // ────────────────────────────────────────────────────────────────────────────
+
   try {
     let finalParentId, finalChildId;
     let childAccepted = false, parentAccepted = false;
@@ -79,9 +99,9 @@ router.post('/', auth, async (req, res) => {
       [
         req.user.id, finalParentId, finalChildId, subject_id, grade,
         title, description || null,
-        prize_name, prize_emoji || '🏆', prize_coins || 100,
-        points_per_correct || 5, penalty_per_wrong || 2, time_per_question || 30,
-        target_coins || prize_coins || 100,
+        prize_name, prize_emoji || '🏆', pc,
+        ppc, ppw, tpq,
+        pc,
         childAccepted, parentAccepted,
       ]
     );

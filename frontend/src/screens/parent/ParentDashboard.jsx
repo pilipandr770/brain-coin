@@ -236,11 +236,13 @@ export default function ParentDashboard() {
       </section>
 
       {settingsChild && (
-        <ContentSettings
-          childId={settingsChild.id}
-          childName={settingsChild.name}
-          onBack={() => setSettingsChild(null)}
-        />
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <ContentSettings
+            childId={settingsChild.id}
+            childName={settingsChild.name}
+            onBack={() => setSettingsChild(null)}
+          />
+        </div>
       )}
     </div>
   );
