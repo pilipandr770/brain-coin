@@ -23,7 +23,7 @@
     "production": {
       "android": {
         "serviceAccountKeyPath": "C:/Users/ПК/Downloads/vat-bot-mailguard-d80bced4960d.json",
-        "track": "internal"
+        "track": "alpha"
       }
     }
   }
