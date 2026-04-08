@@ -114,6 +114,18 @@ app.get('/api/health', async (_req, res) => {
 // Serves index.html for any non-API route so React Router works
 // Excludes known static files (sitemap.xml, robots.txt, etc.) so they aren't replaced by HTML
 if (process.env.NODE_ENV === 'production') {
+  // ── Explicit routes for SEO files — guarantee correct Content-Type ──────────
+  const seoMime = { '.xml': 'application/xml', '.txt': 'text/plain' };
+  ['sitemap.xml', 'robots.txt', 'ai.txt', 'llms.txt'].forEach(file => {
+    const ext = path.extname(file);
+    app.get(`/${file}`, (_req, res) => {
+      res.setHeader('Content-Type', seoMime[ext] || 'text/plain');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.sendFile(path.join(__dirname, 'public', file));
+    });
+  });
+  // ────────────────────────────────────────────────────────────────────────────
+
   const STATIC_FILES = /\.(xml|txt|json|png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|eot|css|js|map)$/i;
   app.get('*', (req, res, next) => {
     if (STATIC_FILES.test(req.path)) return next();
