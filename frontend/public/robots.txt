@@ -1,5 +1,5 @@
 # robots.txt — BrainCoin
-# https://brain-coin.onrender.com/
+# https://brain-coin.de/
 
 # ── Default: alle Bots ────────────────────────────────────────────────────────
 User-agent: *
@@ -64,4 +64,4 @@ User-agent: WhatsApp
 Allow: /
 
 # ── Sitemaps ──────────────────────────────────────────────────────────────────
-Sitemap: https://brain-coin.onrender.com/sitemap.xml
+Sitemap: https://brain-coin.de/sitemap.xml

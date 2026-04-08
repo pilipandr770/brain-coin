@@ -1,6 +1,6 @@
 # ai.txt — AI Crawler Policy for BrainCoin
-# https://brain-coin.onrender.com/
-# Vollständige Inhaltsbeschreibung: https://brain-coin.onrender.com/llms.txt
+# https://brain-coin.de/
+# Vollständige Inhaltsbeschreibung: https://brain-coin.de/llms.txt
 
 # ── OpenAI ────────────────────────────────────────────────────────────────────
 User-agent: GPTBot
@@ -63,6 +63,6 @@ User-agent: YouBot
 Allow: /
 
 # ── Контакт ───────────────────────────────────────────────────────────────────
-Contact: https://brain-coin.onrender.com/impressum
-LLMs-txt: https://brain-coin.onrender.com/llms.txt
+Contact: https://brain-coin.de/impressum
+LLMs-txt: https://brain-coin.de/llms.txt
 

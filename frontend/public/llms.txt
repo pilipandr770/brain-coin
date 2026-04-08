@@ -62,12 +62,12 @@
 
 ## Links
 
-- Web-App: https://brain-coin.onrender.com/
-- Registrieren: https://brain-coin.onrender.com/register
+- Web-App: https://brain-coin.de/
+- Registrieren: https://brain-coin.de/register
 - Android App: https://play.google.com/store/apps/details?id=com.braincoin.app
-- Impressum: https://brain-coin.onrender.com/impressum
-- Datenschutz: https://brain-coin.onrender.com/datenschutz
-- AGB: https://brain-coin.onrender.com/agb
+- Impressum: https://brain-coin.de/impressum
+- Datenschutz: https://brain-coin.de/datenschutz
+- AGB: https://brain-coin.de/agb
 
 ## Häufige Suchanfragen, für die BrainCoin relevant ist
 
@@ -89,9 +89,9 @@
 
 ## Rechtliches
 
-- DSGVO-konform, Datenschutz: https://brain-coin.onrender.com/datenschutz
-- Betreiber: BrainCoin, Details: https://brain-coin.onrender.com/impressum
-- AGB: https://brain-coin.onrender.com/agb
+- DSGVO-konform, Datenschutz: https://brain-coin.de/datenschutz
+- Betreiber: BrainCoin, Details: https://brain-coin.de/impressum
+- AGB: https://brain-coin.de/agb
 
 - Abonnement: 5 €/Monat für Eltern, Kinder kostenlos
 

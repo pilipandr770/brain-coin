@@ -4,26 +4,26 @@
 
   <!-- Startseite — höchste Priorität -->
   <url>
-    <loc>https://brain-coin.onrender.com/</loc>
+    <loc>https://brain-coin.de/</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://brain-coin.onrender.com/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://brain-coin.onrender.com/"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://brain-coin.de/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://brain-coin.de/"/>
   </url>
 
   <!-- Registrierung — wichtig für Conversions -->
   <url>
-    <loc>https://brain-coin.onrender.com/register</loc>
+    <loc>https://brain-coin.de/register</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
-    <xhtml:link rel="alternate" hreflang="de" href="https://brain-coin.onrender.com/register"/>
+    <xhtml:link rel="alternate" hreflang="de" href="https://brain-coin.de/register"/>
   </url>
 
   <!-- Login -->
   <url>
-    <loc>https://brain-coin.onrender.com/login</loc>
+    <loc>https://brain-coin.de/login</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -31,21 +31,21 @@
 
   <!-- Rechtliches — für Vertrauen und DE-Compliance -->
   <url>
-    <loc>https://brain-coin.onrender.com/impressum</loc>
+    <loc>https://brain-coin.de/impressum</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
 
   <url>
-    <loc>https://brain-coin.onrender.com/datenschutz</loc>
+    <loc>https://brain-coin.de/datenschutz</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
 
   <url>
-    <loc>https://brain-coin.onrender.com/agb</loc>
+    <loc>https://brain-coin.de/agb</loc>
     <lastmod>2026-04-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
