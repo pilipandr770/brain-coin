@@ -112,8 +112,11 @@ app.get('/api/health', async (_req, res) => {
 
 // SPA fallback — must be AFTER all API routes, ONLY in production
 // Serves index.html for any non-API route so React Router works
+// Excludes known static files (sitemap.xml, robots.txt, etc.) so they aren't replaced by HTML
 if (process.env.NODE_ENV === 'production') {
-  app.get('*', (_req, res, next) => {
+  const STATIC_FILES = /\.(xml|txt|json|png|jpg|jpeg|gif|svg|ico|webp|woff2?|ttf|eot|css|js|map)$/i;
+  app.get('*', (req, res, next) => {
+    if (STATIC_FILES.test(req.path)) return next();
     const f = path.join(__dirname, 'public', 'index.html');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
