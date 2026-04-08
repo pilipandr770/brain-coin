@@ -115,7 +115,7 @@ app.get('/api/health', async (_req, res) => {
 // Excludes known static files (sitemap.xml, robots.txt, etc.) so they aren't replaced by HTML
 if (process.env.NODE_ENV === 'production') {
   // ── Explicit routes for SEO files — guarantee correct Content-Type ──────────
-  const seoMime = { '.xml': 'application/xml', '.txt': 'text/plain' };
+  const seoMime = { '.xml': 'application/xml; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
   ['sitemap.xml', 'robots.txt', 'ai.txt', 'llms.txt'].forEach(file => {
     const ext = path.extname(file);
     app.get(`/${file}`, (_req, res) => {
