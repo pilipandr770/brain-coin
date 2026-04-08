@@ -1,21 +1,67 @@
+# robots.txt — BrainCoin
+# https://brain-coin.onrender.com/
+
+# ── Default: alle Bots ────────────────────────────────────────────────────────
 User-agent: *
 Allow: /
+Allow: /register
+Allow: /login
+Allow: /impressum
+Allow: /datenschutz
+Allow: /agb
 Disallow: /parent/
 Disallow: /child/
 Disallow: /api/
+Disallow: /admin
+Crawl-delay: 2
 
-# Google
+# ── Google ────────────────────────────────────────────────────────────────────
 User-agent: Googlebot
 Allow: /
 Disallow: /parent/
 Disallow: /child/
 Disallow: /api/
+Disallow: /admin
 
-# Bing
+User-agent: Googlebot-Image
+Allow: /
+
+# ── Bing ──────────────────────────────────────────────────────────────────────
 User-agent: Bingbot
 Allow: /
 Disallow: /parent/
 Disallow: /child/
 Disallow: /api/
+Disallow: /admin
+Crawl-delay: 2
 
+# ── DuckDuckGo ────────────────────────────────────────────────────────────────
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /parent/
+Disallow: /child/
+Disallow: /api/
+
+# ── Yandex ───────────────────────────────────────────────────────────────────
+User-agent: YandexBot
+Allow: /
+Disallow: /parent/
+Disallow: /child/
+Disallow: /api/
+Crawl-delay: 3
+
+# ── Social Media Previews ─────────────────────────────────────────────────────
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# ── Sitemaps ──────────────────────────────────────────────────────────────────
 Sitemap: https://brain-coin.onrender.com/sitemap.xml

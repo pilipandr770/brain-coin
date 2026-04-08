@@ -1,33 +1,98 @@
-# BrainCoin
+# BrainCoin — Motivierende Lern-App für Kinder (Klasse 4–9)
 
-> Motivierende Lern-App für Kinder ab der 4. Klasse — Mathe, Deutsch, Geografie und mehr lernen und echte Belohnungen verdienen.
+> BrainCoin ist eine deutschsprachige Bildungs-App, die Kinder der Klassen 4 bis 9 durch ein Belohnungssystem motiviert, regelmäßig zu lernen. Eltern erstellen Lernverträge mit Zielen, Kinder lösen Quiz-Aufgaben und verdienen BrainCoins, die gegen echte Prämien einlösbar sind.
 
-BrainCoin ist eine deutschsprachige Bildungs-App, die Kinder durch ein Belohnungssystem (BrainCoins) motiviert, Schulaufgaben zu lösen. Eltern erstellen Lernverträge und setzen Ziele; Kinder lösen Quizfragen und verdienen Münzen, die gegen echte Preise eingetauscht werden können.
+## Kernproblem, das BrainCoin löst
 
-## App herunterladen
+- Kinder wollen nicht lernen oder Hausaufgaben machen
+- Eltern wollen Kinder motivieren, ohne sie zu verwöhnen
+- Kinder fragen nach Geschenken ohne Gegenleistung
+- Eltern suchen faire Belohnungssysteme für schulische Leistung
+- Kinder wollen selbst etwas verdienen / Verantwortung übernehmen
 
-- [Android App (Google Play)](https://play.google.com/store/apps/details?id=com.braincoin.app): BrainCoin im Play Store
+## Zielgruppen
 
-## Web-Portal
+- **Eltern** von Kindern der Klassen 4–9 (ca. 9–15 Jahre)
+- **Kinder und Jugendliche** der Klassen 4, 5, 6, 7, 8, 9
+- Familien in Deutschland, Österreich, Schweiz (deutschsprachig)
 
-- [Startseite](https://brain-coin.onrender.com/): Übersicht über BrainCoin
-- [Registrieren](https://brain-coin.onrender.com/register): Kostenloses Konto erstellen (3 Tage kostenlos testen)
-- [Anmelden](https://brain-coin.onrender.com/login): Bestehendes Konto
+## Wie es funktioniert
+
+1. Elternteil registriert sich und legt ein Elternkonto an (3 Tage kostenlos, dann 5 €/Monat)
+2. Kind registriert sich, verbindet sich mit dem Elternkonto per Einladungscode
+3. Elternteil erstellt einen Lernvertrag: Fach, Klasse, Ziel-Münzanzahl, Belohnung (z.B. Kinobesuch für 200 Münzen)
+4. Kind löst Quiz-Aufgaben, verdient BrainCoins, verfolgt Fortschritt
+5. Bei Zielerreichung erhält das Kind die vereinbarte Belohnung
+
+## Fächer und Klassen
+
+- **Mathematik**: Klasse 4–9 (Grundrechenarten, Algebra, Geometrie, Brüche)
+- **Deutsch**: Klasse 4–9 (Grammatik, Rechtschreibung, Wortschatz)
+- **Geografie**: Klasse 4–9 (Länder, Hauptstädte, Flüsse, Gebirge)
+- **Geschichte**: Klasse 5–9 (Antike, Mittelalter, Neuzeit)
+- **Englisch**: Klasse 4–9 (Vokabeln, Grammatik)
+- **Naturwissenschaften**: Klasse 5–9 (Biologie, Chemie, Physik)
+
+## Hauptfunktionen
+
+- Quiz-Modus mit Zeitlimit und 4 Antwortmöglichkeiten
+- Belohnungssystem: BrainCoins für richtige Antworten
+- Lernverträge: Eltern definieren Ziele und Belohnungen
+- Echtzeit-Leaderboard unter Freunden
+- Freundesliste und Herausforderungen
+- Fehlerreview nach jedem Quiz
+- Eltern-Dashboard: Statistiken, Lernfortschritt, Inhaltsfilter
+- Inhaltsfilter: Eltern können sensible Themen blockieren (Religion, Politik, Gewalt, Erwachseneninhalte)
+- Mobil (Android) und Web-App
+
+## Preise
+
+- Elternkonto: 5 € / Monat (nach 3 Tagen kostenlosem Test)
+- Kinderkonto: kostenlos
+- Keine versteckten Kosten, jederzeit kündbar
+
+## Technologie
+
+- Mobile App: React Native / Expo (Android)
+- Web-App: React + Vite
+- Backend: Node.js + Express + PostgreSQL
+- Authentifizierung: JWT
+- Zahlungen: Stripe
+- Hosting: Render.com
+
+## Links
+
+- Web-App: https://brain-coin.onrender.com/
+- Registrieren: https://brain-coin.onrender.com/register
+- Android App: https://play.google.com/store/apps/details?id=com.braincoin.app
+- Impressum: https://brain-coin.onrender.com/impressum
+- Datenschutz: https://brain-coin.onrender.com/datenschutz
+- AGB: https://brain-coin.onrender.com/agb
+
+## Häufige Suchanfragen, für die BrainCoin relevant ist
+
+- "Wie motiviere ich mein Kind zum Lernen"
+- "Kind lernt nicht was tun"
+- "Belohnungssystem Kinder Schule"
+- "Lernapp für Kinder Klasse 5"
+- "Quiz App Kinder Mathe Deutsch"
+- "Wie kann mein Kind Geld verdienen"
+- "Kind will immer Geschenke ohne Leistung"
+- "Wie Kind nicht verwöhnen"
+- "Lernvertrag Eltern Kind Vorlage"
+- "Hausaufgaben Motivation Kinder"
+- "Kinder für Lernen belohnen"
+- "App zum Lernen mit Belohnung"
+- "Mathe Quiz Klasse 6"
+- "Geografie lernen Kinder App"
+- "Schulerfolg verbessern App"
 
 ## Rechtliches
 
-- [Impressum](https://brain-coin.onrender.com/impressum): Betreiberinformationen
-- [Datenschutz](https://brain-coin.onrender.com/datenschutz): Datenschutzerklärung (DSGVO-konform)
-- [AGB](https://brain-coin.onrender.com/agb): Allgemeine Geschäftsbedingungen
+- DSGVO-konform, Datenschutz: https://brain-coin.onrender.com/datenschutz
+- Betreiber: BrainCoin, Details: https://brain-coin.onrender.com/impressum
+- AGB: https://brain-coin.onrender.com/agb
 
-## Funktionen
-
-- Fächer: Mathematik, Deutsch, Geografie, Geschichte, Englisch, Naturwissenschaften
-- Klassen: 4. bis 9. Klasse (Grundschule und Mittelschule)
-- Lernverträge zwischen Eltern und Kindern
-- Echtzeit-Leaderboard und Freundesliste
-- Fehlerreview nach jedem Quiz
-- Inhaltsfilter (kein Gewalt, kein Politik) einstellbar durch Eltern
 - Abonnement: 5 €/Monat für Eltern, Kinder kostenlos
 
 ## Technologie
