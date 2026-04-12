@@ -1,7 +1,7 @@
 import './src/i18n'; // init i18n before anything else
 import { registerRootComponent } from 'expo';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StatusBar } from 'expo-status-bar';
+import { SystemBars } from 'react-native-edge-to-edge';
 import { AuthProvider } from './src/context/AuthContext';
 import AppNavigator from './src/navigation/AppNavigator';
 
@@ -10,7 +10,7 @@ function App() {
     <SafeAreaProvider>
       <AuthProvider>
         <AppNavigator />
-        <StatusBar style="auto" />
+        <SystemBars style="auto" />
       </AuthProvider>
     </SafeAreaProvider>
   );

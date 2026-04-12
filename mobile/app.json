@@ -22,6 +22,7 @@
     "android": {
       "package": "com.braincoin.app",
       "versionCode": 5,
+      "resizeableActivity": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#1d4ed8"
@@ -35,6 +36,7 @@
     },
     "plugins": [
       "expo-secure-store",
+      "react-native-edge-to-edge",
       [
         "expo-build-properties",
         {
@@ -43,7 +45,9 @@
             "targetSdkVersion": 35,
             "buildToolsVersion": "35.0.0",
             "gradleVersion": "8.7",
-            "kotlinVersion": "1.9.25"
+            "kotlinVersion": "1.9.25",
+            "ndkVersion": "27.2.12479018",
+            "useLegacyPackaging": false
           }
         }
       ]
