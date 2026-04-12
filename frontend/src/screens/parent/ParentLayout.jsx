@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, BarChart3, Gift, Settings, LogOut, ShieldCheck } from 'lucide-react';
+import { Home, BarChart3, Gift, Settings, LogOut, ShieldCheck, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function ParentLayout() {
@@ -45,10 +45,11 @@ export default function ParentLayout() {
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-20">
         <div className="max-w-2xl mx-auto flex justify-around">
           {[
-            { to: '/parent',          icon: Home,    label: 'Panel', end: true },
-            { to: '/parent?tab=stats', icon: BarChart3, label: 'Statistik' },
-            { to: '/parent/children/new', icon: Gift, label: 'Kind' },
+            { to: '/parent',          icon: Home,       label: 'Panel',   end: true },
+            { to: '/parent?tab=stats', icon: BarChart3,  label: 'Statistik' },
+            { to: '/parent/children/new', icon: Gift,   label: 'Kind' },
             { to: '/parent/contracts/new', icon: Settings, label: 'Vertrag' },
+            { to: '/parent/payment',   icon: CreditCard, label: 'Abo' },
           ].map(({ to, icon: Icon, label, end }) => (
             <NavLink
               key={to}
