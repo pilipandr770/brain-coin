@@ -1,14 +1,17 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
 
 export default function PaymentScreen() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, logout } = useAuth();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [status, setStatus]     = useState(null);   // loaded from API
   const [loading, setLoading]   = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Stripe redirects back with ?status=success or ?status=cancel
   const stripeResult = searchParams.get('status');
@@ -48,6 +51,38 @@ export default function PaymentScreen() {
       alert('Abrechnungsportal konnte nicht geöffnet werden. Bitte versuchen Sie es erneut.');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!window.confirm('Möchten Sie Ihr Abonnement wirklich kündigen? Sie haben bis zum Ende des Abrechnungszeitraums weiterhin Zugang.')) return;
+    setCancelLoading(true);
+    try {
+      await api.post('/payments/cancel');
+      await fetchStatus();
+      alert('Ihr Abonnement wurde gekündigt. Sie haben weiterhin Zugang bis zum Ende des Abrechnungszeitraums.');
+    } catch {
+      alert('Kündigung fehlgeschlagen. Bitte versuchen Sie es erneut.');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      'Möchten Sie Ihr Konto wirklich löschen?\n\nAlle Daten (Kinder, Verträge, Statistiken) werden unwiderruflich gelöscht und Ihr Abonnement wird sofort beendet.'
+    );
+    if (!confirmed) return;
+    const confirmed2 = window.confirm('Diese Aktion kann nicht rückgängig gemacht werden. Wirklich löschen?');
+    if (!confirmed2) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete('/auth/me');
+      logout();
+      navigate('/');
+    } catch {
+      alert('Konto konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.');
+      setDeleteLoading(false);
     }
   };
 
@@ -156,15 +191,38 @@ export default function PaymentScreen() {
           disabled={actionLoading || loading}
           className="w-full bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 text-gray-700 font-semibold py-3 rounded-xl transition-colors mb-3"
         >
-          {actionLoading
-            ? 'Laden…'
-            : 'Abonnement verwalten'}
+          {actionLoading ? 'Laden…' : 'Abonnement verwalten'}
         </button>
       )}
 
-      <p className="text-xs text-center text-gray-400">
+      {(subStatus === 'active' || subStatus === 'trialing') && (
+        <button
+          onClick={handleCancelSubscription}
+          disabled={cancelLoading}
+          className="w-full bg-white hover:bg-red-50 border border-red-200 text-red-600 font-semibold py-3 rounded-xl transition-colors mb-3"
+        >
+          {cancelLoading ? 'Kündigung wird verarbeitet…' : 'Abonnement kündigen'}
+        </button>
+      )}
+
+      <p className="text-xs text-center text-gray-400 mb-8">
         {'Zahlungen werden sicher über Stripe verarbeitet. Jederzeit kündbar.'}
       </p>
+
+      {/* Danger zone */}
+      <div className="border border-red-200 rounded-2xl p-5">
+        <h3 className="font-bold text-red-700 mb-2">Gefahrenzone</h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Das Löschen des Kontos ist unwiderruflich. Alle Daten, Kinder und Verträge werden dauerhaft entfernt.
+        </p>
+        <button
+          onClick={handleDeleteAccount}
+          disabled={deleteLoading}
+          className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-300 text-white font-bold py-3 rounded-xl transition-colors"
+        >
+          {deleteLoading ? 'Wird gelöscht…' : 'Konto löschen'}
+        </button>
+      </div>
     </div>
   );
 }

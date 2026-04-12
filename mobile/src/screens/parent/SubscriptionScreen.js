@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet,
-  TouchableOpacity, ActivityIndicator, Linking,
+  TouchableOpacity, ActivityIndicator, Linking, Alert, Platform,
 } from 'react-native';
 import api from '../../api';
+import { useAuth } from '../../context/AuthContext';
 
 // Payments happen on the web — no in-app purchase (avoids 30% App Store / Google Play fee).
 // The app only shows subscription status and redirects to the website for payment management.
@@ -21,8 +22,11 @@ const FEATURES = [
 ];
 
 export default function SubscriptionScreen() {
+  const { logout } = useAuth();
   const [status,  setStatus]  = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -38,6 +42,56 @@ export default function SubscriptionScreen() {
   useEffect(() => { load(); }, [load]);
 
   const openWebPayment = () => Linking.openURL(WEB_URL);
+
+  const handleCancelSubscription = () => {
+    Alert.alert(
+      'Abonnement kündigen',
+      'Möchten Sie Ihr Abonnement kündigen? Sie haben bis zum Ende des Abrechnungszeitraums weiterhin Zugang.',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Kündigen',
+          style: 'destructive',
+          onPress: async () => {
+            setCancelLoading(true);
+            try {
+              await api.post('/payments/cancel');
+              await load();
+              Alert.alert('Gekündigt', 'Ihr Abonnement wurde gekündigt. Zugang bis zum Periodenende bleibt bestehen.');
+            } catch {
+              Alert.alert('Fehler', 'Kündigung fehlgeschlagen. Bitte erneut versuchen.');
+            } finally {
+              setCancelLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Konto löschen',
+      'Möchten Sie Ihr Konto wirklich löschen? Alle Daten werden unwiderruflich entfernt.',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Endgültig löschen',
+          style: 'destructive',
+          onPress: async () => {
+            setDeleteLoading(true);
+            try {
+              await api.delete('/auth/me');
+              logout();
+            } catch {
+              Alert.alert('Fehler', 'Konto konnte nicht gelöscht werden.');
+              setDeleteLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color="#1d4ed8" />;
 
@@ -110,9 +164,40 @@ export default function SubscriptionScreen() {
         </View>
       )}
 
+      {isActive && (
+        <TouchableOpacity
+          style={styles.cancelBtn}
+          onPress={handleCancelSubscription}
+          disabled={cancelLoading}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.cancelBtnTxt}>
+            {cancelLoading ? 'Wird verarbeitet…' : '❌ Abonnement kündigen'}
+          </Text>
+        </TouchableOpacity>
+      )}
+
       <Text style={styles.legal}>
         Jederzeit kündbar · Sicher bezahlen mit Stripe · Keine In-App-Käufe
       </Text>
+
+      {/* Danger zone */}
+      <View style={styles.dangerZone}>
+        <Text style={styles.dangerTitle}>⚠️ Gefahrenzone</Text>
+        <Text style={styles.dangerDesc}>
+          Das Löschen des Kontos ist unwiderruflich. Alle Daten und Kinder werden dauerhaft entfernt.
+        </Text>
+        <TouchableOpacity
+          style={styles.deleteBtn}
+          onPress={handleDeleteAccount}
+          disabled={deleteLoading}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.deleteBtnTxt}>
+            {deleteLoading ? 'Wird gelöscht…' : 'Konto löschen'}
+          </Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -164,4 +249,22 @@ const styles = StyleSheet.create({
   },
   infoText:        { fontSize: 13, color: '#1e40af', lineHeight: 19 },
   legal:           { textAlign: 'center', fontSize: 12, color: '#94a3b8', margin: 16 },
+  cancelBtn:       {
+    marginHorizontal: 16, marginTop: 8, borderRadius: 14,
+    borderWidth: 1, borderColor: '#fca5a5', backgroundColor: '#fff7f7',
+    padding: 16, alignItems: 'center',
+  },
+  cancelBtnTxt:    { fontSize: 15, fontWeight: '700', color: '#dc2626' },
+  dangerZone:      {
+    marginHorizontal: 16, marginBottom: 32, marginTop: 8,
+    borderRadius: 16, borderWidth: 1, borderColor: '#fca5a5',
+    backgroundColor: '#fff1f1', padding: 20,
+  },
+  dangerTitle:     { fontSize: 15, fontWeight: '800', color: '#b91c1c', marginBottom: 8 },
+  dangerDesc:      { fontSize: 13, color: '#64748b', marginBottom: 16, lineHeight: 19 },
+  deleteBtn:       {
+    backgroundColor: '#dc2626', borderRadius: 12,
+    padding: 14, alignItems: 'center',
+  },
+  deleteBtnTxt:    { fontSize: 15, fontWeight: '800', color: '#fff' },
 });

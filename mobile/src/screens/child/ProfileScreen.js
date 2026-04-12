@@ -48,6 +48,28 @@ export default function ChildProfile() {
     }
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Konto löschen',
+      'Möchten Sie Ihr Konto wirklich löschen? Alle Daten werden unwiderruflich entfernt.',
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Endgültig löschen',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete('/auth/me');
+              logout();
+            } catch {
+              Alert.alert('Fehler', 'Konto konnte nicht gelöscht werden.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 60 }}>
       {/* Header */}
@@ -85,6 +107,15 @@ export default function ChildProfile() {
       <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
         <Text style={styles.logoutText}>↩ {t('auth.logout')}</Text>
       </TouchableOpacity>
+
+      {/* Delete account */}
+      <View style={styles.dangerZone}>
+        <Text style={styles.dangerTitle}>⚠️ Gefahrenzone</Text>
+        <Text style={styles.dangerDesc}>Das Löschen ist unwiderruflich.</Text>
+        <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
+          <Text style={styles.deleteBtnTxt}>Konto löschen</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -107,4 +138,9 @@ const styles = StyleSheet.create({
   infoRow:        { fontSize: 14, color: '#475569' },
   logoutBtn:      { marginHorizontal: 16, marginTop: 24, padding: 16, borderRadius: 14, backgroundColor: '#fee2e2', alignItems: 'center' },
   logoutText:     { fontSize: 16, fontWeight: '700', color: '#b91c1c' },
+  dangerZone:     { marginHorizontal: 16, marginTop: 16, marginBottom: 32, borderRadius: 16, borderWidth: 1, borderColor: '#fca5a5', backgroundColor: '#fff1f1', padding: 18 },
+  dangerTitle:    { fontSize: 14, fontWeight: '800', color: '#b91c1c', marginBottom: 6 },
+  dangerDesc:     { fontSize: 13, color: '#64748b', marginBottom: 14 },
+  deleteBtn:      { backgroundColor: '#dc2626', borderRadius: 12, padding: 13, alignItems: 'center' },
+  deleteBtnTxt:   { fontSize: 14, fontWeight: '800', color: '#fff' },
 });

@@ -307,4 +307,37 @@ router.post('/children', auth, async (req, res) => {
   }
 });
 
+// ── Delete own account ────────────────────────────────────────────────────────
+// Cancels any active Stripe subscription (immediately) then hard-deletes the user.
+// All child data cascades via ON DELETE CASCADE in the schema.
+router.delete('/me', auth, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT stripe_sub_id, stripe_customer_id FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    const user = rows[0];
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Cancel Stripe subscription if active
+    if (user.stripe_sub_id) {
+      try {
+        const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+        await stripe.subscriptions.cancel(user.stripe_sub_id);
+      } catch (stripeErr) {
+        // Log but don't block deletion if sub already cancelled
+        console.error('Stripe cancel on delete:', stripeErr.message);
+      }
+    }
+
+    // Delete user — cascade removes all related rows
+    await pool.query('DELETE FROM users WHERE id = $1', [req.user.id]);
+
+    res.status(204).send();
+  } catch (err) {
+    console.error('DELETE /auth/me error:', err);
+    res.status(500).json({ error: 'Serverfehler' });
+  }
+});
+
 module.exports = router;

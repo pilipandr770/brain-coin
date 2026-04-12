@@ -166,6 +166,28 @@ router.get('/portal', auth, async (req, res) => {
   }
 });
 
+// ─── Cancel Subscription ──────────────────────────────────────────────────
+// Cancels at period end (user keeps access until current period ends).
+router.post('/cancel', auth, async (req, res) => {
+  if (!['parent','admin'].includes(req.user.role)) {
+    return res.status(403).json({ error: 'Parents only' });
+  }
+  try {
+    const { rows } = await pool.query(
+      'SELECT stripe_sub_id FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    const subId = rows[0]?.stripe_sub_id;
+    if (!subId) return res.status(404).json({ error: 'Kein aktives Abonnement gefunden' });
+
+    await stripe.subscriptions.update(subId, { cancel_at_period_end: true });
+    res.json({ canceled: true });
+  } catch (err) {
+    console.error('Cancel subscription error:', err);
+    res.status(500).json({ error: 'Kündigung fehlgeschlagen' });
+  }
+});
+
 // ─── Status ────────────────────────────────────────────────────────────────
 // Returns the subscription status for the logged-in parent.
 router.get('/status', auth, async (req, res) => {
