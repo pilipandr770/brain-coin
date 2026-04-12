@@ -9,6 +9,9 @@ const { pool }  = require('./db');
 
 const app = express();
 
+// ── Trust Render / reverse-proxy headers (required for express-rate-limit) ───
+app.set('trust proxy', 1);
+
 // ── Security headers (OWASP A05) ─────────────────────────────────────────────
 app.use(helmet({ contentSecurityPolicy: false }));
 
