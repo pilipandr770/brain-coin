@@ -47,6 +47,7 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <main>
         <Routes>
           <Route path="/"        element={<RootRedirect />} />
           <Route path="/login"   element={<LoginScreen />} />
@@ -85,6 +86,7 @@ export default function App() {
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </main>
       </BrowserRouter>
     </AuthProvider>
   );
